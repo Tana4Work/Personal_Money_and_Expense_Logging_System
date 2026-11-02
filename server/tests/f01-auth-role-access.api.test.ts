@@ -55,4 +55,12 @@ describe("F-01 authentication and role access", () => {
     const login = await request(app).post("/api/auth/login").send({ email: testEmails.userA, password: testPassword }).expect(200);
     await request(app).get("/api/admin/users").set("Authorization", `Bearer ${login.body.token}`).expect(403);
   });
+
+  it("allows an administrator to list users without exposing password hashes", async () => {
+    const login = await request(app).post("/api/auth/login").send({ email: testEmails.admin, password: testPassword }).expect(200);
+    const response = await request(app).get("/api/admin/users").set("Authorization", `Bearer ${login.body.token}`).expect(200);
+    const user = response.body.find((candidate: { email: string }) => candidate.email === testEmails.userA);
+    expect(user).toMatchObject({ email: testEmails.userA, role: "USER", enabled: true });
+    expect(user).not.toHaveProperty("passwordHash");
+  });
 });
