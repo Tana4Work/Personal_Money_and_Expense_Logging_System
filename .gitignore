@@ -1,0 +1,10 @@
+# Local agent/tool metadata
+.agents/
+skills-lock.json
+tmp_pdf_extract/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
