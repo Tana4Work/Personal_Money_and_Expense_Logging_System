@@ -3,6 +3,12 @@
 skills-lock.json
 tmp_pdf_extract/
 
+# Node and build output
+node_modules/
+**/node_modules/
+dist/
+coverage/
+
 # Local environment and secrets
 .env
 .env.*
