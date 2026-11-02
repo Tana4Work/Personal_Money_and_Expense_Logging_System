@@ -1,7 +1,7 @@
 import express, { type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import { UserRole } from "@prisma/client";
-import { clearSession, createSession, currentUser, endUserSessions, hashPassword, passwordIsValid, readBearerToken, safeUser, verifyPassword, type SafeUser } from "./auth.js";
+import { clearSession, createSession, currentUser, endUserSessions, readBearerToken, safeUser, verifyPassword, type SafeUser } from "./auth.js";
 import { getPrisma } from "./prisma.js";
 
 export const app = express();

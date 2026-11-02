@@ -2,25 +2,20 @@
 
 ## Stack
 
-- Client: React 18, TypeScript, Vite 6, Bootstrap 5.3, CSS.
-- Server: Node.js, Express 4, TypeScript, REST API, CORS.
-- Database: PostgreSQL through Prisma 5.
-- Authentication: Bearer session tokens and salted scrypt password hashes.
-- Server sessions expire after seven days; logout revokes the presented bearer token.
-- Tests: Vitest, React Testing Library, Supertest, and Playwright.
+React 18, TypeScript, Vite 6, Bootstrap 5.3, and CSS; Node.js with Express 4 and TypeScript; PostgreSQL with Prisma 5. Authentication uses bearer session tokens and salted scrypt hashes. Tests use Vitest, React Testing Library, Supertest, and Playwright.
 
 ## Local setup
 
 1. Install Node.js, npm, and Docker Desktop.
-2. Start a local PostgreSQL container:
+2. Start PostgreSQL:
 
    ```powershell
    docker run --name money-tracker-postgres -e POSTGRES_USER=toktickit -e POSTGRES_PASSWORD=toktickit -e POSTGRES_DB=toktickit -p 127.0.0.1:5432:5432 -v money-tracker-postgres-data:/var/lib/postgresql/data -d postgres:17
    ```
 
-   For later sessions, run `docker start money-tracker-postgres`.
-3. Copy `server/.env.example` to `server/.env` and set `DATABASE_URL`, `SEED_USER_PASSWORD`, and `SEED_ADMIN_PASSWORD` to local synthetic values. Copy `client/.env.example` to `client/.env` if configuring a deployed API URL. Do not commit `.env` files or real passwords.
-4. Install dependencies and prepare the database:
+   Later, use `docker start money-tracker-postgres`.
+3. Copy `server/.env.example` to `server/.env`; set `DATABASE_URL`, `SEED_USER_PASSWORD`, and `SEED_ADMIN_PASSWORD` to synthetic local values. Do not commit `.env` files or real passwords.
+4. Install, migrate, and seed:
 
    ```powershell
    npm --prefix server install
@@ -28,18 +23,17 @@
    npm --prefix server run prisma:deploy
    npm --prefix server run prisma:seed
    ```
-5. Start the API and client in separate terminals:
 
-   ```powershell
-   npm --prefix server run dev
-   npm --prefix client run dev
-   ```
-6. Open `http://localhost:5173`. Seeded identities are `demo.user@money.local` and `demo.admin@money.local`; use the corresponding local passwords from `server/.env`.
+5. Run `npm --prefix server run dev` and `npm --prefix client run dev` in separate terminals, then open `http://localhost:5173`.
 
-## Tests and builds
+Seeded identities: `demo.user@money.local` and `demo.admin@money.local`. Use their local passwords from `server/.env`.
 
-- Server: `npm --prefix server test`
-- Client: `npm --prefix client test`
-- Build both: `npm run build`
+## Verify
 
-Server API tests use the PostgreSQL database configured by `server/.env`.
+```powershell
+npm run build
+npm --prefix server test
+npm --prefix client test
+```
+
+Server API tests use the PostgreSQL database configured in `server/.env`.

@@ -13,10 +13,6 @@ function tokenHash(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
-export function passwordIsValid(password: unknown): password is string {
-  return typeof password === "string" && password.length >= 12 && password.length <= 128;
-}
-
 export async function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(16).toString("hex");
   const derived = await scrypt(password, salt, 64) as Buffer;
