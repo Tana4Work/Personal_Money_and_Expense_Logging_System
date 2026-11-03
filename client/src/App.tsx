@@ -90,9 +90,9 @@ function OpeningBalanceForm({ account, onSave }: { account: Account; onSave: (ac
     <h2 className="h4" id={`opening-balance-heading-${account.id}`}>Opening balance for {account.name}</h2>
     {error && <p className="alert alert-danger" role="alert">{error}</p>}
     <form className="row g-3" onSubmit={(event) => void submit(event)}>
-      <div className="col-sm-5"><label className="form-label" htmlFor={`opening-amount-${account.id}`}>Opening balance amount</label><input className="form-control" id={`opening-amount-${account.id}`} type="number" min="0" step="any" value={amount} onChange={(event) => setAmount(event.target.value)} required /></div>
-      <div className="col-sm-5"><label className="form-label" htmlFor={`opening-date-${account.id}`}>Opening balance date</label><input className="form-control" id={`opening-date-${account.id}`} type="date" value={date} onChange={(event) => setDate(event.target.value)} required /></div>
-      <div className="col-sm-2 d-flex align-items-end"><button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Saving…" : "Save balance"}</button></div>
+      <div className="col-12 col-md-5"><label className="form-label" htmlFor={`opening-amount-${account.id}`}>Opening balance amount</label><input className="form-control" id={`opening-amount-${account.id}`} type="number" min="0" step="any" value={amount} onChange={(event) => setAmount(event.target.value)} required /></div>
+      <div className="col-12 col-md-5"><label className="form-label" htmlFor={`opening-date-${account.id}`}>Opening balance date</label><input className="form-control" id={`opening-date-${account.id}`} type="date" value={date} onChange={(event) => setDate(event.target.value)} required /></div>
+      <div className="col-12 col-md-2 d-flex align-items-end"><button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Saving…" : "Save balance"}</button></div>
     </form>
   </section>;
 }

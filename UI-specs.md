@@ -2,7 +2,7 @@
 
 ## Purpose and scope
 
-This document records the UI theme and behavior currently implemented for F-01 Authentication and Role Access and F-02 Account Foundation. It describes the existing client in `client/src`; opening-balance and transaction screens are outside its current scope.
+This document records the UI theme and behavior currently implemented for F-01 Authentication and Role Access, F-02 Account Foundation, and F-03 Opening Balance. It describes the existing client in `client/src`; transaction screens are outside its current scope.
 
 ## Theme
 
@@ -48,8 +48,9 @@ Typography uses Inter followed by system sans-serif fallbacks. Headings use dark
 ### User view
 
 - A `USER` sees a welcome heading with their name and the message "Your financial workspace is ready."
-- The "Your accounts" table displays each retrieved account's name, type, and subtype.
-- Opening-balance entry and transaction screens are not implemented in F-02.
+- The "Your accounts" table displays each retrieved account's name, type, subtype, opening balance, and recorded date.
+- Each owned `CASH/BANK` account has an opening-balance form with amount and date fields. The saved balance and date appear in the account table.
+- The opening-balance form belongs to F-03. Transaction screens are not implemented.
 
 ### Administrator view
 
@@ -67,12 +68,15 @@ Typography uses Inter followed by system sans-serif fallbacks. Headings use dark
 
 - The document viewport is configured for device width in `client/index.html`.
 - The page supports a minimum width of 320 CSS pixels.
-- The sign-in card width is capped at 27rem and its padding adapts to the available viewport width.
-- At widths of 576px or less, the signed-in user label is constrained and allowed to wrap; the administrator table uses reduced horizontal padding inside its responsive wrapper.
+- The sign-in card width is capped at 27rem, constrained within the available grid column, and its padding adapts to the viewport width.
+- The account and administrator tables stay within their responsive wrappers and can scroll horizontally when their columns exceed the viewport.
+- The opening-balance fields and save button stack below 768px and share a row at wider viewports.
+- At widths of 767.98px or less, the signed-in user label is constrained and allowed to wrap, and table wrappers use reduced horizontal padding.
 
 ## Accessibility present in the implementation
 
 - Sign-in fields have visible labels associated with their inputs.
+- Opening-balance amount and date fields have visible labels associated with their inputs.
 - Screen sections use headings and `aria-labelledby` references.
 - Error messages use `role="alert"`.
 - The administrator table uses column headers, including a visually hidden label for the action column.
@@ -90,4 +94,4 @@ The access token and current-user identity are held in React component state in 
 - `client/src/main.tsx` - React entry point and Bootstrap/theme CSS imports.
 - `client/src/theme.css` - palette, typography, panels, controls, and responsive rules.
 - `client/index.html` - document title and responsive viewport metadata.
-- `client/tests/App.test.tsx` - UI tests for user sign-in/current-user/sign-out and administrator access controls.
+- `client/tests/App.test.tsx` - UI tests for user sign-in/current-user/sign-out, opening-balance entry, and administrator access controls.
