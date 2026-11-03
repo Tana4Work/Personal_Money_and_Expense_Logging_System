@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AccountSubtype, AccountType, UserRole } from "@prisma/client";
 import request from "supertest";
+import { seedAccountsForUser } from "../src/account-seed.js";
 import { app } from "../src/app.js";
 import { hashPassword } from "../src/auth.js";
 import { getPrisma } from "../src/prisma.js";
@@ -11,6 +12,7 @@ const emails = {
   userA: "f02.user-a@test.local",
   userB: "f02.user-b@test.local",
   admin: "f02.admin@test.local",
+  seedUser: "f02.seed-user@test.local",
 };
 
 beforeAll(async () => {
@@ -19,6 +21,7 @@ beforeAll(async () => {
   await prisma.user.create({ data: { name: "F02 User A", email: emails.userA, passwordHash, role: UserRole.USER } });
   await prisma.user.create({ data: { name: "F02 User B", email: emails.userB, passwordHash, role: UserRole.USER } });
   await prisma.user.create({ data: { name: "F02 Administrator", email: emails.admin, passwordHash, role: UserRole.ADMINISTRATOR } });
+  await prisma.user.create({ data: { name: "F02 Seed User", email: emails.seedUser, passwordHash, role: UserRole.USER } });
 });
 
 afterAll(async () => {
@@ -32,6 +35,22 @@ async function login(email: string) {
 }
 
 describe("F-02 account foundation", () => {
+  it("seeds the five approved accounts for a user without creating duplicates", async () => {
+    const user = await prisma.user.findUniqueOrThrow({ where: { email: emails.seedUser } });
+    await seedAccountsForUser(prisma, user.id);
+    const seeded = await prisma.account.findMany({ where: { ownerUserId: user.id }, orderBy: { name: "asc" } });
+    expect(seeded.map(({ name, type, subtype, openingBalance }) => ({ name, type, subtype, openingBalance: openingBalance.toString() }))).toEqual([
+      { name: "Bank Account", type: "CASH", subtype: "BANK", openingBalance: "0" },
+      { name: "Credit Card", type: "LOAN_TAKEN", subtype: "CREDIT_CARD", openingBalance: "0" },
+      { name: "Dining", type: "EXPENSE", subtype: "OTHER", openingBalance: "0" },
+      { name: "Groceries", type: "EXPENSE", subtype: "OTHER", openingBalance: "0" },
+      { name: "Salary", type: "INCOME", subtype: "OTHER", openingBalance: "0" },
+    ]);
+
+    await seedAccountsForUser(prisma, user.id);
+    expect(await prisma.account.count({ where: { ownerUserId: user.id } })).toBe(5);
+  });
+
   it("returns an empty list for an authenticated user without accounts", async () => {
     const token = await login(emails.userB);
     await request(app).get("/api/accounts").set("Authorization", `Bearer ${token}`).expect(200, []);

@@ -1,5 +1,6 @@
-import { AccountSubtype, AccountType, PrismaClient, UserRole } from "@prisma/client";
+import { PrismaClient, UserRole } from "@prisma/client";
 import { hashPassword } from "../src/auth.js";
+import { seedAccountsForUser } from "../src/account-seed.js";
 
 const prisma = new PrismaClient();
 
@@ -23,21 +24,7 @@ async function main() {
     create: { name: "Demo Administrator", email: "demo.admin@money.local", role: UserRole.ADMINISTRATOR, enabled: true, passwordHash: adminPasswordHash },
   });
 
-  const accounts = [
-    { name: "Bank Account", type: AccountType.CASH, subtype: AccountSubtype.BANK },
-    { name: "Credit Card", type: AccountType.LOAN_TAKEN, subtype: AccountSubtype.CREDIT_CARD },
-    { name: "Salary", type: AccountType.INCOME, subtype: AccountSubtype.OTHER },
-    { name: "Dining", type: AccountType.EXPENSE, subtype: AccountSubtype.OTHER },
-    { name: "Groceries", type: AccountType.EXPENSE, subtype: AccountSubtype.OTHER },
-  ];
-
-  for (const account of accounts) {
-    const existing = await prisma.account.findFirst({
-      where: { ownerUserId: user.id, ...account },
-      select: { id: true },
-    });
-    if (!existing) await prisma.account.create({ data: { ownerUserId: user.id, ...account } });
-  }
+  await seedAccountsForUser(prisma, user.id);
 
 }
 
