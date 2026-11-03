@@ -12,6 +12,21 @@ enum UserRole {
   ADMINISTRATOR
 }
 
+enum AccountType {
+  CASH
+  LOAN_GIVEN
+  LOAN_TAKEN
+  INCOME
+  EXPENSE
+}
+
+enum AccountSubtype {
+  BANK
+  WALLET
+  CREDIT_CARD
+  OTHER
+}
+
 model User {
   id           Int           @id @default(autoincrement())
   name         String
@@ -22,8 +37,22 @@ model User {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   sessions     AuthSession[]
+  accounts     Account[]
 
   @@index([role, enabled])
+}
+
+model Account {
+  id             Int            @id @default(autoincrement())
+  ownerUserId    Int
+  name           String
+  type           AccountType
+  subtype        AccountSubtype
+  openingBalance Decimal        @default(0)
+  createdAt      DateTime       @default(now())
+  owner          User           @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+
+  @@index([ownerUserId])
 }
 
 model AuthSession {

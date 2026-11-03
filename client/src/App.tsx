@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
-import { getAdminUsers, getCurrentUser, login, logout, setUserEnabled, type AdminUser, type SafeUser } from "./api.js";
+import { getAccounts, getAdminUsers, getCurrentUser, login, logout, setUserEnabled, type Account, type AdminUser, type SafeUser } from "./api.js";
 
 export default function App() {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<SafeUser | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
 
   useEffect(() => {
     if (!token || !user) return;
     setError("");
     if (user.role === "ADMINISTRATOR") void getAdminUsers(token).then(setUsers).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Unable to load your workspace."));
+    else void getAccounts(token).then(setAccounts).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Unable to load your accounts."));
   }, [token, user]);
 
   async function signIn(email: string, password: string) {
@@ -26,7 +28,7 @@ export default function App() {
     setBusy(true);
     try { if (currentToken) await logout(currentToken); }
     catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to sign out."); }
-    finally { setToken(null); setUser(null); setUsers([]); setBusy(false); }
+    finally { setToken(null); setUser(null); setAccounts([]); setUsers([]); setBusy(false); }
   }
 
   async function changeEnabled(target: AdminUser) {
@@ -40,7 +42,7 @@ export default function App() {
     <header className="topbar"><div className="container d-flex justify-content-between align-items-center py-3"><a className="brand" href="#home">Personal Money</a><div className="d-flex align-items-center gap-3"><span className="user-label">{user.name} <span className="role-pill">{user.role}</span></span><button className="btn btn-outline-light btn-sm" type="button" disabled={busy} onClick={() => void signOut()}>Log out</button></div></div></header>
     <main className="container py-4" id="home">
       {error && <p className="alert alert-danger" role="alert">{error}</p>}
-      {user.role === "USER" ? <UserHome user={user} /> : <AdminView users={users} onChange={changeEnabled} />}
+      {user.role === "USER" ? <UserHome user={user} accounts={accounts} /> : <AdminView users={users} onChange={changeEnabled} />}
     </main>
   </div>;
 }
@@ -60,8 +62,10 @@ function LoginScreen({ busy, error, onSubmit }: { busy: boolean; error: string; 
   </main>;
 }
 
-function UserHome({ user }: { user: SafeUser }) {
-  return <section aria-labelledby="welcome-heading"><p className="eyebrow">PERSONAL FINANCE</p><h1 id="welcome-heading">Welcome, {user.name}</h1><p className="text-secondary">Your financial workspace is ready.</p></section>;
+function UserHome({ user, accounts }: { user: SafeUser; accounts: Account[] }) {
+  return <section aria-labelledby="welcome-heading"><p className="eyebrow">PERSONAL FINANCE</p><h1 id="welcome-heading">Welcome, {user.name}</h1><p className="text-secondary">Your financial workspace is ready.</p>
+    <section aria-labelledby="accounts-heading"><h2 className="h4 mt-4" id="accounts-heading">Your accounts</h2><div className="table-responsive admin-table"><table className="table align-middle"><thead><tr><th>Name</th><th>Type</th><th>Subtype</th></tr></thead><tbody>{accounts.map((account) => <tr key={account.id}><td>{account.name}</td><td>{account.type}</td><td>{account.subtype}</td></tr>)}</tbody></table></div></section>
+  </section>;
 }
 
 function AdminView({ users, onChange }: { users: AdminUser[]; onChange: (user: AdminUser) => Promise<void> }) {

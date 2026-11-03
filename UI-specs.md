@@ -2,7 +2,7 @@
 
 ## Purpose and scope
 
-This document records the UI theme and behavior currently implemented for F-01 Authentication and Role Access. It describes the existing client in `client/src`; it does not define unimplemented financial screens.
+This document records the UI theme and behavior currently implemented for F-01 Authentication and Role Access and F-02 Account Foundation. It describes the existing client in `client/src`; opening-balance and transaction screens are outside its current scope.
 
 ## Theme
 
@@ -48,7 +48,8 @@ Typography uses Inter followed by system sans-serif fallbacks. Headings use dark
 ### User view
 
 - A `USER` sees a welcome heading with their name and the message "Your financial workspace is ready."
-- The view is a placeholder for the F-01 authentication scope; account and transaction screens are not implemented here.
+- The "Your accounts" table displays each retrieved account's name, type, and subtype.
+- Opening-balance entry and transaction screens are not implemented in F-02.
 
 ### Administrator view
 
