@@ -1,6 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
-import { UserRole } from "@prisma/client";
+import { AccountSubtype, AccountType, Prisma, UserRole } from "@prisma/client";
 import { clearSession, createSession, currentUser, endUserSessions, readBearerToken, safeUser, verifyPassword, type SafeUser } from "./auth.js";
 import { getPrisma } from "./prisma.js";
 
@@ -26,13 +26,14 @@ async function requireUser(req: Request, res: Response): Promise<SafeUser | null
   return user;
 }
 
-function accountResponse(account: { id: number; name: string; type: string; subtype: string; openingBalance: { toString(): string }; createdAt: Date }) {
+function accountResponse(account: { id: number; name: string; type: string; subtype: string; openingBalance: { toString(): string }; openingBalanceDate: Date | null; createdAt: Date }) {
   return {
     id: account.id,
     name: account.name,
     type: account.type,
     subtype: account.subtype,
     openingBalance: account.openingBalance.toString(),
+    openingBalanceDate: account.openingBalanceDate?.toISOString() ?? null,
     createdAt: account.createdAt.toISOString(),
   };
 }
@@ -83,6 +84,48 @@ app.get("/api/accounts/:accountId", asyncRoute(async (req, res) => {
   if (!account) { res.status(404).json({ error: "Account not found." }); return; }
   if (account.ownerUserId !== user.id) { res.status(403).json({ error: "Account access is not allowed." }); return; }
   res.status(200).json(accountResponse(account));
+}));
+
+app.post("/api/accounts/:accountId/opening-balance", asyncRoute(async (req, res) => {
+  const user = await requireUser(req, res);
+  if (!user) return;
+  const accountId = Number(req.params.accountId);
+  if (!Number.isInteger(accountId) || accountId <= 0) {
+    res.status(400).json({ error: "A valid account ID is required." }); return;
+  }
+  const prisma = getPrisma();
+  const account = await prisma.account.findUnique({ where: { id: accountId } });
+  if (!account) { res.status(404).json({ error: "Account not found." }); return; }
+  if (account.ownerUserId !== user.id) { res.status(403).json({ error: "Account access is not allowed." }); return; }
+  if (account.type !== AccountType.CASH || account.subtype !== AccountSubtype.BANK) {
+    res.status(400).json({ error: "Opening balances can only be recorded for bank accounts." }); return;
+  }
+
+  const rawAmount = req.body?.amount;
+  if ((typeof rawAmount !== "string" && typeof rawAmount !== "number") || String(rawAmount).trim() === "") {
+    res.status(400).json({ error: "A valid non-negative amount is required." }); return;
+  }
+  let amount: Prisma.Decimal;
+  try { amount = new Prisma.Decimal(rawAmount); }
+  catch { res.status(400).json({ error: "A valid non-negative amount is required." }); return; }
+  if (!amount.isFinite() || amount.isNegative() || amount.decimalPlaces() > 30 || amount.greaterThanOrEqualTo(new Prisma.Decimal(10).pow(35))) {
+    res.status(400).json({ error: "A valid non-negative amount is required." }); return;
+  }
+
+  const rawDate = req.body?.date;
+  if (typeof rawDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(rawDate) || Number(rawDate.slice(0, 4)) < 1) {
+    res.status(400).json({ error: "A valid calendar date in YYYY-MM-DD form is required." }); return;
+  }
+  const openingBalanceDate = new Date(`${rawDate}T00:00:00.000Z`);
+  if (!Number.isFinite(openingBalanceDate.getTime()) || openingBalanceDate.toISOString().slice(0, 10) !== rawDate) {
+    res.status(400).json({ error: "A valid calendar date in YYYY-MM-DD form is required." }); return;
+  }
+
+  const updated = await prisma.account.update({
+    where: { id: account.id },
+    data: { openingBalance: amount, openingBalanceDate },
+  });
+  res.status(200).json(accountResponse(updated));
 }));
 
 app.get("/api/admin/users", asyncRoute(async (req, res) => {

@@ -43,14 +43,15 @@ model User {
 }
 
 model Account {
-  id             Int            @id @default(autoincrement())
-  ownerUserId    Int
-  name           String
-  type           AccountType
-  subtype        AccountSubtype
-  openingBalance Decimal        @default(0)
-  createdAt      DateTime       @default(now())
-  owner          User           @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  id                 Int            @id @default(autoincrement())
+  ownerUserId        Int
+  name               String
+  type               AccountType
+  subtype            AccountSubtype
+  openingBalance     Decimal        @default(0)
+  openingBalanceDate DateTime?
+  createdAt          DateTime       @default(now())
+  owner              User           @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
 
   @@index([ownerUserId])
 }
