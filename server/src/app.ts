@@ -19,6 +19,24 @@ async function requireAdministrator(req: Request, res: Response): Promise<SafeUs
   return user;
 }
 
+async function requireUser(req: Request, res: Response): Promise<SafeUser | null> {
+  const user = await currentUser(req);
+  if (!user) { res.status(401).json({ error: "Authentication is required." }); return null; }
+  if (user.role !== UserRole.USER) { res.status(403).json({ error: "User access is required." }); return null; }
+  return user;
+}
+
+function accountResponse(account: { id: number; name: string; type: string; subtype: string; openingBalance: { toString(): string }; createdAt: Date }) {
+  return {
+    id: account.id,
+    name: account.name,
+    type: account.type,
+    subtype: account.subtype,
+    openingBalance: account.openingBalance.toString(),
+    createdAt: account.createdAt.toISOString(),
+  };
+}
+
 app.get("/api/health", (_req, res) => res.status(200).json({ status: "ok", service: "Personal Money API" }));
 
 app.post("/api/auth/login", asyncRoute(async (req, res) => {
@@ -42,6 +60,29 @@ app.get("/api/auth/me", asyncRoute(async (req, res) => {
   const user = await currentUser(req);
   if (!user) { res.status(401).json({ error: "Authentication is required." }); return; }
   res.status(200).json({ user });
+}));
+
+app.get("/api/accounts", asyncRoute(async (req, res) => {
+  const user = await requireUser(req, res);
+  if (!user) return;
+  const accounts = await getPrisma().account.findMany({
+    where: { ownerUserId: user.id },
+    orderBy: [{ name: "asc" }, { id: "asc" }],
+  });
+  res.status(200).json(accounts.map(accountResponse));
+}));
+
+app.get("/api/accounts/:accountId", asyncRoute(async (req, res) => {
+  const user = await requireUser(req, res);
+  if (!user) return;
+  const accountId = Number(req.params.accountId);
+  if (!Number.isInteger(accountId) || accountId <= 0) {
+    res.status(400).json({ error: "A valid account ID is required." }); return;
+  }
+  const account = await getPrisma().account.findUnique({ where: { id: accountId } });
+  if (!account) { res.status(404).json({ error: "Account not found." }); return; }
+  if (account.ownerUserId !== user.id) { res.status(403).json({ error: "Account access is not allowed." }); return; }
+  res.status(200).json(accountResponse(account));
 }));
 
 app.get("/api/admin/users", asyncRoute(async (req, res) => {
