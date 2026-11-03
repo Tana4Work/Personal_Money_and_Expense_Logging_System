@@ -27,6 +27,20 @@ enum AccountSubtype {
   OTHER
 }
 
+enum TransactionFormType {
+  PAYMENT_OR_CHARGE
+  RECEIVE_MONEY
+}
+
+enum AllocationType {
+  INCOME
+  EXPENSE
+  REPAYMENT
+  LOAN_GIVEN
+  BORROWING
+  TRANSFER
+}
+
 model User {
   id           Int           @id @default(autoincrement())
   name         String
@@ -38,6 +52,7 @@ model User {
   updatedAt    DateTime      @updatedAt
   sessions     AuthSession[]
   accounts     Account[]
+  transactions  Transaction[] @relation("TransactionOwner")
 
   @@index([role, enabled])
 }
@@ -52,8 +67,43 @@ model Account {
   openingBalanceDate DateTime?
   createdAt          DateTime       @default(now())
   owner              User           @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  sourceTransactions Transaction[]   @relation("TransactionSource")
+  receivingTransactions Transaction[] @relation("TransactionReceiving")
+  allocationLines    AllocationLine[]
 
   @@index([ownerUserId])
+}
+
+model Transaction {
+  id                 Int                 @id @default(autoincrement())
+  ownerUserId        Int
+  formType           TransactionFormType
+  sourceAccountId    Int?
+  receivingAccountId Int?
+  totalAmount        Decimal             @db.Decimal(65, 30)
+  transactionDate    DateTime
+  createdAt          DateTime            @default(now())
+  owner              User                @relation("TransactionOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  sourceAccount      Account?            @relation("TransactionSource", fields: [sourceAccountId], references: [id], onDelete: Restrict)
+  receivingAccount   Account?            @relation("TransactionReceiving", fields: [receivingAccountId], references: [id], onDelete: Restrict)
+  allocations        AllocationLine[]
+
+  @@index([ownerUserId, transactionDate])
+  @@index([receivingAccountId])
+  @@index([sourceAccountId])
+}
+
+model AllocationLine {
+  id             Int            @id @default(autoincrement())
+  transactionId  Int
+  accountId      Int
+  allocationType AllocationType
+  amount         Decimal        @db.Decimal(65, 30)
+  transaction    Transaction    @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  account        Account        @relation(fields: [accountId], references: [id], onDelete: Restrict)
+
+  @@index([transactionId])
+  @@index([accountId])
 }
 
 model AuthSession {

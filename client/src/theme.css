@@ -18,4 +18,11 @@ h1 { color: #163d32; font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 750; le
 .login-card { width: min(100%, 27rem); min-width: 0; padding: clamp(1.5rem, 5vw, 2.5rem); }
 .login-card h1 { font-size: 2rem; }
 .form-control:focus, .btn:focus-visible { border-color: #3b9970; box-shadow: 0 0 0 .22rem #3b997033; }
+.summary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1.25rem; }
+.summary-card, .transaction-form { border: 1px solid #d9e7de; border-radius: 1rem; background: #fff; box-shadow: 0 8px 24px #163d320a; }
+.summary-card { display: flex; flex-direction: column; gap: .35rem; padding: 1.25rem; }
+.summary-card span { color: #4b806c; font-size: .8rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+.summary-card strong { color: #163d32; font-size: 1.7rem; }
+.transaction-form { padding: 1.25rem; }
 @media (max-width: 767.98px) { .user-label { max-width: 11rem; overflow-wrap: anywhere; text-align: right; font-size: .76rem; } .admin-table { padding: .25rem .5rem; } }
+@media (max-width: 575.98px) { .summary-grid { grid-template-columns: 1fr; } }
