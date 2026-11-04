@@ -1,8 +1,12 @@
 import { defineConfig } from "vitest/config";
 import { loadEnv } from "vite";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const serverDirectory = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ mode }) => {
-  Object.assign(process.env, loadEnv(mode, process.cwd(), ""));
+  Object.assign(process.env, loadEnv(mode, serverDirectory, ""));
 
   return {
     test: {
