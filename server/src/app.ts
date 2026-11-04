@@ -44,6 +44,7 @@ function transactionResponse(transaction: {
   totalAmount: { toString(): string };
   transactionDate: Date;
   createdAt: Date;
+  sourceAccount: { id: number; name: string; type: string; subtype: string } | null;
   receivingAccount: { id: number; name: string; type: string; subtype: string } | null;
   allocations: Array<{ id: number; allocationType: string; amount: { toString(): string }; account: { id: number; name: string; type: string; subtype: string } }>;
 }) {
@@ -53,6 +54,7 @@ function transactionResponse(transaction: {
     totalAmount: transaction.totalAmount.toString(),
     transactionDate: transaction.transactionDate.toISOString(),
     createdAt: transaction.createdAt.toISOString(),
+    sourceAccount: transaction.sourceAccount,
     receivingAccount: transaction.receivingAccount,
     allocations: transaction.allocations.map((line) => ({
       id: line.id,
@@ -79,6 +81,7 @@ function parseCalendarDate(rawDate: unknown): Date | null {
 }
 
 const transactionInclude = {
+  sourceAccount: { select: { id: true, name: true, type: true, subtype: true } },
   receivingAccount: { select: { id: true, name: true, type: true, subtype: true } },
   allocations: { orderBy: { id: "asc" as const }, select: { id: true, allocationType: true, amount: true, account: { select: { id: true, name: true, type: true, subtype: true } } } },
 };
@@ -224,6 +227,57 @@ app.post("/api/transactions/receive", asyncRoute(async (req, res) => {
   res.status(201).json(transactionResponse(transaction));
 }));
 
+app.post("/api/transactions/payment", asyncRoute(async (req, res) => {
+  const user = await requireUser(req, res);
+  if (!user) return;
+  const amount = parsePositiveAmount(req.body?.totalAmount);
+  if (!amount) { res.status(400).json({ error: "A valid positive amount is required." }); return; }
+  const transactionDate = parseCalendarDate(req.body?.date);
+  if (!transactionDate) { res.status(400).json({ error: "A valid calendar date in YYYY-MM-DD form is required." }); return; }
+  const sourceAccountId = Number(req.body?.sourceAccountId);
+  if (!Number.isInteger(sourceAccountId) || sourceAccountId <= 0) { res.status(400).json({ error: "A valid source account is required." }); return; }
+  const allocations = req.body?.allocations;
+  if (!Array.isArray(allocations) || allocations.length === 0) { res.status(400).json({ error: "At least one expense allocation is required." }); return; }
+
+  const prisma = getPrisma();
+  const sourceAccount = await prisma.account.findUnique({ where: { id: sourceAccountId } });
+  if (!sourceAccount) { res.status(404).json({ error: "Source account not found." }); return; }
+  if (sourceAccount.ownerUserId !== user.id) { res.status(403).json({ error: "Source account access is not allowed." }); return; }
+  if (sourceAccount.type !== AccountType.LOAN_TAKEN || sourceAccount.subtype !== AccountSubtype.CREDIT_CARD) {
+    res.status(400).json({ error: "Payments can only use a credit-card account." }); return;
+  }
+
+  let allocationTotal = new Prisma.Decimal(0);
+  const allocationData: Array<{ accountId: number; allocationType: AllocationType; amount: Prisma.Decimal }> = [];
+  for (const item of allocations) {
+    const accountId = Number(item?.accountId);
+    const lineAmount = parsePositiveAmount(item?.amount);
+    if (!Number.isInteger(accountId) || accountId <= 0 || !lineAmount || item?.allocationType !== AllocationType.EXPENSE) {
+      res.status(400).json({ error: "Each allocation must be a positive expense allocation." }); return;
+    }
+    const account = await prisma.account.findUnique({ where: { id: accountId } });
+    if (!account) { res.status(404).json({ error: "Expense account not found." }); return; }
+    if (account.ownerUserId !== user.id) { res.status(403).json({ error: "Expense account access is not allowed." }); return; }
+    if (account.type !== AccountType.EXPENSE) { res.status(400).json({ error: "Payment allocations must use expense accounts." }); return; }
+    allocationTotal = allocationTotal.add(lineAmount);
+    allocationData.push({ accountId, allocationType: AllocationType.EXPENSE, amount: lineAmount });
+  }
+  if (!allocationTotal.equals(amount)) { res.status(400).json({ error: "Allocation total must equal the transaction total." }); return; }
+
+  const transaction = await prisma.transaction.create({
+    data: {
+      ownerUserId: user.id,
+      formType: TransactionFormType.PAYMENT_OR_CHARGE,
+      sourceAccountId,
+      totalAmount: amount,
+      transactionDate,
+      allocations: { create: allocationData },
+    },
+    include: transactionInclude,
+  });
+  res.status(201).json(transactionResponse(transaction));
+}));
+
 app.get("/api/transactions", asyncRoute(async (req, res) => {
   const user = await requireUser(req, res);
   if (!user) return;
@@ -256,7 +310,8 @@ app.get("/api/summaries/balances", asyncRoute(async (req, res) => {
   const prisma = getPrisma();
   const accounts = await prisma.account.findMany({ where: { ownerUserId: user.id }, orderBy: [{ name: "asc" }, { id: "asc" }] });
   const incoming = await prisma.transaction.groupBy({ by: ["receivingAccountId"], where: { ownerUserId: user.id, receivingAccountId: { not: null } }, _sum: { totalAmount: true } });
-  const balances = accounts.map((account) => ({ accountId: account.id, balance: new Prisma.Decimal(account.openingBalance).add(incoming.find((entry) => entry.receivingAccountId === account.id)?._sum.totalAmount ?? 0).toString() }));
+  const outgoing = await prisma.transaction.groupBy({ by: ["sourceAccountId"], where: { ownerUserId: user.id, sourceAccountId: { not: null } }, _sum: { totalAmount: true } });
+  const balances = accounts.map((account) => ({ accountId: account.id, balance: new Prisma.Decimal(account.openingBalance).add(incoming.find((entry) => entry.receivingAccountId === account.id)?._sum.totalAmount ?? 0).sub(outgoing.find((entry) => entry.sourceAccountId === account.id)?._sum.totalAmount ?? 0).toString() }));
   res.status(200).json({ accounts: balances });
 }));
 

@@ -81,6 +81,43 @@ describe("authentication and account UI", () => {
     expect(screen.getByText("Received money")).toBeInTheDocument();
   });
 
+  it("records a split credit-card purchase and refreshes expense history", async () => {
+    const accounts = [
+      { id: 1, name: "Credit Card", type: "LOAN_TAKEN", subtype: "CREDIT_CARD", openingBalance: "0", openingBalanceDate: null, createdAt: "2026-11-03T00:00:00.000Z" },
+      { id: 2, name: "Dining", type: "EXPENSE", subtype: "OTHER", openingBalance: "0", openingBalanceDate: null, createdAt: "2026-11-03T00:00:00.000Z" },
+      { id: 3, name: "Groceries", type: "EXPENSE", subtype: "OTHER", openingBalance: "0", openingBalanceDate: null, createdAt: "2026-11-03T00:00:00.000Z" },
+    ];
+    const transaction = { id: 20, formType: "PAYMENT_OR_CHARGE", totalAmount: "2000", transactionDate: "2026-11-04T00:00:00.000Z", createdAt: "2026-11-04T00:00:00.000Z", sourceAccount: { id: 1, name: "Credit Card", type: "LOAN_TAKEN", subtype: "CREDIT_CARD" }, receivingAccount: null, allocations: [{ id: 1, allocationType: "EXPENSE", amount: "800", account: { id: 2, name: "Dining", type: "EXPENSE", subtype: "OTHER" } }, { id: 2, allocationType: "EXPENSE", amount: "1200", account: { id: 3, name: "Groceries", type: "EXPENSE", subtype: "OTHER" } }] };
+    const fetchMock = vi.fn()
+      .mockImplementationOnce(() => response({ token: "user-session", expiresAt: "2030-01-01T00:00:00.000Z", user: { id: 1, name: "Demo User", email: "demo.user@money.local", role: "USER" } }))
+      .mockImplementationOnce(() => response({ user: { id: 1, name: "Demo User", email: "demo.user@money.local", role: "USER" } }))
+      .mockImplementationOnce(() => response(accounts))
+      .mockImplementationOnce(() => response({ accounts: [{ accountId: 1, balance: "0" }, { accountId: 2, balance: "0" }, { accountId: 3, balance: "0" }] }))
+      .mockImplementationOnce(() => response({ income: "0", expenses: "0" }))
+      .mockImplementationOnce(() => response([]))
+      .mockImplementationOnce(() => response(transaction))
+      .mockImplementationOnce(() => response(accounts))
+      .mockImplementationOnce(() => response({ accounts: [{ accountId: 1, balance: "-2000" }, { accountId: 2, balance: "0" }, { accountId: 3, balance: "0" }] }))
+      .mockImplementationOnce(() => response({ income: "0", expenses: "2000" }))
+      .mockImplementationOnce(() => response([transaction]));
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(screen.getByLabelText("Email address"), "demo.user@money.local");
+    await user.type(screen.getByLabelText("Password"), "A synthetic password");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.type(await screen.findByLabelText("Payment total amount"), "2000");
+    fireEvent.change(screen.getByLabelText("Payment date"), { target: { value: "2026-11-04" } });
+    await user.selectOptions(screen.getByLabelText("Credit card"), "1");
+    await user.type(screen.getByLabelText("Dining allocation"), "800");
+    await user.type(screen.getByLabelText("Groceries allocation"), "1200");
+    await user.click(screen.getByRole("button", { name: "Record card purchase" }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Payment recorded successfully."));
+    expect(fetchMock.mock.calls[6][0]).toBe("/api/transactions/payment");
+    expect(JSON.parse((fetchMock.mock.calls[6][1] as RequestInit).body as string)).toEqual({ totalAmount: "2000", date: "2026-11-04", sourceAccountId: 1, allocations: [{ accountId: 2, amount: "800", allocationType: "EXPENSE" }, { accountId: 3, amount: "1200", allocationType: "EXPENSE" }] });
+    expect(screen.getByText("Payment/charge")).toBeInTheDocument();
+  });
+
   it("shows administrator access controls without loading financial accounts", async () => {
     const fetchMock = vi.fn()
       .mockImplementationOnce(() => response({ token: "admin-session", expiresAt: "2030-01-01T00:00:00.000Z", user: { id: 2, name: "Demo Administrator", email: "demo.admin@money.local", role: "ADMINISTRATOR" } }))

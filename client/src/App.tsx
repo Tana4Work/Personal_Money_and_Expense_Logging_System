@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { getAccountBalances, getAccounts, getAdminUsers, getCurrentUser, getFinancialSummary, getTransactions, login, logout, recordOpeningBalance, recordReceivedMoney, setUserEnabled, type Account, type AccountBalances, type AdminUser, type FinancialSummary, type MoneyTransaction, type SafeUser } from "./api.js";
+import { getAccountBalances, getAccounts, getAdminUsers, getCurrentUser, getFinancialSummary, getTransactions, login, logout, recordOpeningBalance, recordPayment, recordReceivedMoney, setUserEnabled, type Account, type AccountBalances, type AdminUser, type FinancialSummary, type MoneyTransaction, type SafeUser } from "./api.js";
 
 export default function App() {
   const [token, setToken] = useState<string | null>(null);
@@ -55,12 +55,19 @@ export default function App() {
     setAccounts(loadedAccounts); setBalances(loadedBalances); setSummary(loadedSummary); setTransactions(loadedTransactions);
   }
 
+  async function savePayment(totalAmount: string, date: string, sourceAccountId: number, allocations: Array<{ accountId: number; amount: string }>) {
+    if (!token) return;
+    await recordPayment(token, totalAmount, date, sourceAccountId, allocations);
+    const [loadedAccounts, loadedBalances, loadedSummary, loadedTransactions] = await Promise.all([getAccounts(token), getAccountBalances(token), getFinancialSummary(token), getTransactions(token)]);
+    setAccounts(loadedAccounts); setBalances(loadedBalances); setSummary(loadedSummary); setTransactions(loadedTransactions);
+  }
+
   if (!user || !token) return <LoginScreen busy={busy} error={error} onSubmit={signIn} />;
   return <div className="app-shell">
     <header className="topbar"><div className="container d-flex justify-content-between align-items-center py-3"><a className="brand" href="#home">Personal Money</a><div className="d-flex align-items-center gap-3"><span className="user-label">{user.name} <span className="role-pill">{user.role}</span></span><button className="btn btn-outline-light btn-sm" type="button" disabled={busy} onClick={() => void signOut()}>Log out</button></div></div></header>
     <main className="container py-4" id="home">
       {error && <p className="alert alert-danger" role="alert">{error}</p>}
-    {user.role === "USER" ? <UserHome user={user} accounts={accounts} balances={balances} summary={summary} transactions={transactions} onSaveOpeningBalance={saveOpeningBalance} onSaveReceivedMoney={saveReceivedMoney} /> : <AdminView users={users} onChange={changeEnabled} />}
+    {user.role === "USER" ? <UserHome user={user} accounts={accounts} balances={balances} summary={summary} transactions={transactions} onSaveOpeningBalance={saveOpeningBalance} onSaveReceivedMoney={saveReceivedMoney} onSavePayment={savePayment} /> : <AdminView users={users} onChange={changeEnabled} />}
     </main>
   </div>;
 }
@@ -80,15 +87,31 @@ function LoginScreen({ busy, error, onSubmit }: { busy: boolean; error: string; 
   </main>;
 }
 
-function UserHome({ user, accounts, balances, summary, transactions, onSaveOpeningBalance, onSaveReceivedMoney }: { user: SafeUser; accounts: Account[]; balances: AccountBalances; summary: FinancialSummary; transactions: MoneyTransaction[]; onSaveOpeningBalance: (accountId: number, amount: string, date: string) => Promise<void>; onSaveReceivedMoney: (totalAmount: string, date: string, receivingAccountId: number, incomeAccountId: number) => Promise<void> }) {
+function UserHome({ user, accounts, balances, summary, transactions, onSaveOpeningBalance, onSaveReceivedMoney, onSavePayment }: { user: SafeUser; accounts: Account[]; balances: AccountBalances; summary: FinancialSummary; transactions: MoneyTransaction[]; onSaveOpeningBalance: (accountId: number, amount: string, date: string) => Promise<void>; onSaveReceivedMoney: (totalAmount: string, date: string, receivingAccountId: number, incomeAccountId: number) => Promise<void>; onSavePayment: (totalAmount: string, date: string, sourceAccountId: number, allocations: Array<{ accountId: number; amount: string }>) => Promise<void> }) {
   const balanceFor = (accountId: number) => balances.accounts.find((entry) => entry.accountId === accountId)?.balance ?? "0";
   return <section aria-labelledby="welcome-heading"><p className="eyebrow">PERSONAL FINANCE</p><h1 id="welcome-heading">Welcome, {user.name}</h1><p className="text-secondary">Your financial workspace is ready.</p>
     <section className="summary-grid" aria-label="Financial summary"><article className="summary-card"><span>Income</span><strong>{summary.income}</strong></article><article className="summary-card"><span>Expenses</span><strong>{summary.expenses}</strong></article></section>
     <section aria-labelledby="accounts-heading"><h2 className="h4 mt-4" id="accounts-heading">Your accounts</h2><div className="table-responsive admin-table"><table className="table align-middle"><thead><tr><th>Name</th><th>Type</th><th>Subtype</th><th>Opening balance</th><th>Current balance</th><th>As of date</th></tr></thead><tbody>{accounts.map((account) => <tr key={account.id}><td>{account.name}</td><td>{account.type}</td><td>{account.subtype}</td><td>{account.openingBalance}</td><td>{balanceFor(account.id)}</td><td>{account.openingBalanceDate?.slice(0, 10) ?? "Not recorded"}</td></tr>)}</tbody></table></div></section>
     {accounts.filter((account) => account.type === "CASH" && account.subtype === "BANK").map((account) => <OpeningBalanceForm key={account.id} account={account} onSave={onSaveOpeningBalance} />)}
     <ReceiveMoneyForm accounts={accounts} onSave={onSaveReceivedMoney} />
+    <PaymentForm accounts={accounts} onSave={onSavePayment} />
     <TransactionHistory transactions={transactions} />
   </section>;
+}
+
+function PaymentForm({ accounts, onSave }: { accounts: Account[]; onSave: (totalAmount: string, date: string, sourceAccountId: number, allocations: Array<{ accountId: number; amount: string }>) => Promise<void> }) {
+  const cards = accounts.filter((account) => account.type === "LOAN_TAKEN" && account.subtype === "CREDIT_CARD");
+  const dining = accounts.find((account) => account.type === "EXPENSE" && account.name.toLowerCase() === "dining");
+  const groceries = accounts.find((account) => account.type === "EXPENSE" && account.name.toLowerCase() === "groceries");
+  const [amount, setAmount] = useState(""); const [date, setDate] = useState(""); const [sourceAccountId, setSourceAccountId] = useState(""); const [diningAmount, setDiningAmount] = useState(""); const [groceryAmount, setGroceryAmount] = useState(""); const [busy, setBusy] = useState(false); const [error, setError] = useState(""); const [message, setMessage] = useState("");
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setBusy(true); setError(""); setMessage("");
+    const allocations = [{ accountId: dining?.id ?? 0, amount: diningAmount }, { accountId: groceries?.id ?? 0, amount: groceryAmount }].filter((allocation) => allocation.amount.trim() !== "");
+    try { await onSave(amount, date, Number(sourceAccountId), allocations); setMessage("Payment recorded successfully."); setAmount(""); setDate(""); setDiningAmount(""); setGroceryAmount(""); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to record payment."); }
+    finally { setBusy(false); }
+  }
+  return <section className="transaction-form mt-4" aria-labelledby="payment-heading"><h2 className="h4" id="payment-heading">Record card payment</h2><p className="text-secondary">Split a credit-card purchase across expense categories.</p>{error && <p className="alert alert-danger" role="alert">{error}</p>}{message && <p className="alert alert-success" role="status">{message}</p>}<form className="row g-3" onSubmit={(event) => void submit(event)}><div className="col-12 col-md-3"><label className="form-label" htmlFor="payment-amount">Payment total amount</label><input className="form-control" id="payment-amount" type="number" min="0.01" step="any" value={amount} onChange={(event) => setAmount(event.target.value)} required /></div><div className="col-12 col-md-3"><label className="form-label" htmlFor="payment-date">Payment date</label><input className="form-control" id="payment-date" type="date" value={date} onChange={(event) => setDate(event.target.value)} required /></div><div className="col-12 col-md-3"><label className="form-label" htmlFor="payment-card">Credit card</label><select className="form-select" id="payment-card" value={sourceAccountId} onChange={(event) => setSourceAccountId(event.target.value)} required><option value="">Select card</option>{cards.map((account) => <option value={account.id} key={account.id}>{account.name}</option>)}</select></div><div className="col-12 col-md-3"><label className="form-label" htmlFor="payment-dining">Dining allocation</label><input className="form-control" id="payment-dining" type="number" min="0" step="any" value={diningAmount} onChange={(event) => setDiningAmount(event.target.value)} /></div><div className="col-12 col-md-3"><label className="form-label" htmlFor="payment-groceries">Groceries allocation</label><input className="form-control" id="payment-groceries" type="number" min="0" step="any" value={groceryAmount} onChange={(event) => setGroceryAmount(event.target.value)} /></div><div className="col-12"><button className="btn btn-primary" type="submit" disabled={busy || cards.length === 0 || !dining || !groceries}>{busy ? "Saving…" : "Record card purchase"}</button></div></form></section>;
 }
 
 function ReceiveMoneyForm({ accounts, onSave }: { accounts: Account[]; onSave: (totalAmount: string, date: string, receivingAccountId: number, incomeAccountId: number) => Promise<void> }) {
@@ -105,7 +128,7 @@ function ReceiveMoneyForm({ accounts, onSave }: { accounts: Account[]; onSave: (
 }
 
 function TransactionHistory({ transactions }: { transactions: MoneyTransaction[] }) {
-  return <section className="mt-4" aria-labelledby="transaction-history-heading"><h2 className="h4" id="transaction-history-heading">Transaction history</h2>{transactions.length === 0 ? <p className="text-secondary">No transactions recorded yet.</p> : <div className="table-responsive admin-table"><table className="table align-middle"><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Receiving account</th><th>Allocation</th></tr></thead><tbody>{transactions.map((transaction) => <tr key={transaction.id}><td>{transaction.transactionDate.slice(0, 10)}</td><td>{transaction.formType === "RECEIVE_MONEY" ? "Received money" : transaction.formType}</td><td>{transaction.totalAmount}</td><td>{transaction.receivingAccount?.name ?? "—"}</td><td>{transaction.allocations.map((line) => `${line.account.name}: ${line.amount}`).join(", ")}</td></tr>)}</tbody></table></div>}</section>;
+  return <section className="mt-4" aria-labelledby="transaction-history-heading"><h2 className="h4" id="transaction-history-heading">Transaction history</h2>{transactions.length === 0 ? <p className="text-secondary">No transactions recorded yet.</p> : <div className="table-responsive admin-table"><table className="table align-middle"><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Source/receiving account</th><th>Allocation</th></tr></thead><tbody>{transactions.map((transaction) => <tr key={transaction.id}><td>{transaction.transactionDate.slice(0, 10)}</td><td>{transaction.formType === "RECEIVE_MONEY" ? "Received money" : "Payment/charge"}</td><td>{transaction.totalAmount}</td><td>{transaction.sourceAccount?.name ?? transaction.receivingAccount?.name ?? "—"}</td><td>{transaction.allocations.map((line) => `${line.account.name}: ${line.amount}`).join(", ")}</td></tr>)}</tbody></table></div>}</section>;
 }
 
 function OpeningBalanceForm({ account, onSave }: { account: Account; onSave: (accountId: number, amount: string, date: string) => Promise<void> }) {
