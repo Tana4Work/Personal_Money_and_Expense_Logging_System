@@ -118,6 +118,43 @@ describe("authentication and account UI", () => {
     expect(screen.getByText("Payment/charge")).toBeInTheDocument();
   });
 
+  it("records a credit-card repayment and refreshes the overview", async () => {
+    const accounts = [
+      { id: 1, name: "Bank Account", type: "CASH", subtype: "BANK", openingBalance: "10000", openingBalanceDate: "2026-11-04T00:00:00.000Z", createdAt: "2026-11-03T00:00:00.000Z" },
+      { id: 2, name: "Credit Card", type: "LOAN_TAKEN", subtype: "CREDIT_CARD", openingBalance: "0", openingBalanceDate: null, createdAt: "2026-11-03T00:00:00.000Z" },
+    ];
+    const purchase = { id: 20, formType: "PAYMENT_OR_CHARGE", totalAmount: "2000", transactionDate: "2026-11-04T00:00:00.000Z", createdAt: "2026-11-04T00:00:00.000Z", sourceAccount: { id: 2, name: "Credit Card", type: "LOAN_TAKEN", subtype: "CREDIT_CARD" }, receivingAccount: null, allocations: [{ id: 1, allocationType: "EXPENSE", amount: "2000", account: { id: 3, name: "Dining", type: "EXPENSE", subtype: "OTHER" } }] };
+    const repayment = { id: 21, formType: "PAYMENT_OR_CHARGE", totalAmount: "2000", transactionDate: "2026-11-04T00:00:00.000Z", createdAt: "2026-11-04T00:00:00.000Z", sourceAccount: { id: 1, name: "Bank Account", type: "CASH", subtype: "BANK" }, receivingAccount: { id: 2, name: "Credit Card", type: "LOAN_TAKEN", subtype: "CREDIT_CARD" }, allocations: [{ id: 2, allocationType: "REPAYMENT", amount: "2000", account: { id: 2, name: "Credit Card", type: "LOAN_TAKEN", subtype: "CREDIT_CARD" } }] };
+    const fetchMock = vi.fn()
+      .mockImplementationOnce(() => response({ token: "user-session", expiresAt: "2030-01-01T00:00:00.000Z", user: { id: 1, name: "Demo User", email: "demo.user@money.local", role: "USER" } }))
+      .mockImplementationOnce(() => response({ user: { id: 1, name: "Demo User", email: "demo.user@money.local", role: "USER" } }))
+      .mockImplementationOnce(() => response(accounts))
+      .mockImplementationOnce(() => response({ accounts: [{ accountId: 1, balance: "40000" }, { accountId: 2, balance: "-2000" }] }))
+      .mockImplementationOnce(() => response({ income: "30000", expenses: "2000" }))
+      .mockImplementationOnce(() => response([purchase]))
+      .mockImplementationOnce(() => response(repayment))
+      .mockImplementationOnce(() => response(accounts))
+      .mockImplementationOnce(() => response({ accounts: [{ accountId: 1, balance: "38000" }, { accountId: 2, balance: "0" }] }))
+      .mockImplementationOnce(() => response({ income: "30000", expenses: "2000" }))
+      .mockImplementationOnce(() => response([purchase, repayment]));
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(screen.getByLabelText("Email address"), "demo.user@money.local");
+    await user.type(screen.getByLabelText("Password"), "A synthetic password");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.type(await screen.findByLabelText("Repayment amount"), "2000");
+    fireEvent.change(screen.getByLabelText("Repayment date"), { target: { value: "2026-11-04" } });
+    await user.selectOptions(screen.getByLabelText("Bank source account"), "1");
+    await user.selectOptions(screen.getByLabelText("Credit-card destination"), "2");
+    await user.click(screen.getByRole("button", { name: "Record repayment" }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Repayment recorded successfully."));
+    expect(fetchMock.mock.calls[6][0]).toBe("/api/transactions/repayment");
+    expect(JSON.parse((fetchMock.mock.calls[6][1] as RequestInit).body as string)).toEqual({ totalAmount: "2000", date: "2026-11-04", sourceAccountId: 1, receivingAccountId: 2 });
+    expect(screen.getByText("Credit-card debt")).toBeInTheDocument();
+    expect(screen.getAllByText("0").length).toBeGreaterThan(0);
+  });
+
   it("shows administrator access controls without loading financial accounts", async () => {
     const fetchMock = vi.fn()
       .mockImplementationOnce(() => response({ token: "admin-session", expiresAt: "2030-01-01T00:00:00.000Z", user: { id: 2, name: "Demo Administrator", email: "demo.admin@money.local", role: "ADMINISTRATOR" } }))
