@@ -1,0 +1,10 @@
+services:
+  frontend:
+    build:
+      context: ./client
+    container_name: personal-money-expense-frontend
+    ports:
+      - "127.0.0.1:5173:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

@@ -1,7 +1,8 @@
 import express, { type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import { AccountSubtype, AccountType, AllocationType, Prisma, TransactionFormType, UserRole } from "@prisma/client";
-import { clearSession, createSession, currentUser, endUserSessions, readBearerToken, safeUser, verifyPassword, type SafeUser } from "./auth.js";
+import { clearSession, createSession, currentUser, endUserSessions, hashPassword, readBearerToken, safeUser, verifyPassword, type SafeUser } from "./auth.js";
+import { seedAccountsForUser } from "./account-seed.js";
 import { getPrisma } from "./prisma.js";
 
 export const app = express();
@@ -87,6 +88,31 @@ const transactionInclude = {
 };
 
 app.get("/api/health", (_req, res) => res.status(200).json({ status: "ok", service: "Personal Money API" }));
+
+app.post("/api/auth/register", asyncRoute(async (req, res) => {
+  const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
+  const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+  const password = typeof req.body?.password === "string" ? req.body.password : "";
+  if (!name) { res.status(400).json({ error: "Name is required." }); return; }
+  if (!email) { res.status(400).json({ error: "Email is required." }); return; }
+  if (password.length < 8 || !/[A-Z]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+    res.status(400).json({ error: "Password must be at least 8 characters and include a capital letter and special character." }); return;
+  }
+
+  try {
+    const user = await getPrisma().$transaction(async (transaction) => {
+      const created = await transaction.user.create({ data: { name, email, passwordHash: await hashPassword(password), role: UserRole.USER, enabled: true } });
+      await seedAccountsForUser(transaction, created.id);
+      return created;
+    });
+    res.status(201).json({ user: safeUser(user) });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      res.status(409).json({ error: "An account with that email already exists." }); return;
+    }
+    throw error;
+  }
+}));
 
 app.post("/api/auth/login", asyncRoute(async (req, res) => {
   const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";

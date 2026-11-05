@@ -8,7 +8,7 @@ const initialAccounts = [
   { name: "Groceries", type: AccountType.EXPENSE, subtype: AccountSubtype.OTHER },
 ];
 
-export async function seedAccountsForUser(prisma: PrismaClient, ownerUserId: number): Promise<void> {
+export async function seedAccountsForUser(prisma: Pick<PrismaClient, "account">, ownerUserId: number): Promise<void> {
   for (const account of initialAccounts) {
     const existing = await prisma.account.findFirst({
       where: { ownerUserId, ...account },
