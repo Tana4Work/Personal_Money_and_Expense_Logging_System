@@ -36,6 +36,9 @@ export function recordReceivedMoney(token: string, totalAmount: string, date: st
 export function recordPayment(token: string, totalAmount: string, date: string, sourceAccountId: number, allocations: Array<{ accountId: number; amount: string }>) {
   return request<MoneyTransaction>("/api/transactions/payment", token, { method: "POST", body: JSON.stringify({ totalAmount, date, sourceAccountId, allocations: allocations.map((allocation) => ({ ...allocation, allocationType: "EXPENSE" })) }) });
 }
+export function recordRepayment(token: string, totalAmount: string, date: string, sourceAccountId: number, receivingAccountId: number) {
+  return request<MoneyTransaction>("/api/transactions/repayment", token, { method: "POST", body: JSON.stringify({ totalAmount, date, sourceAccountId, receivingAccountId }) });
+}
 export function getTransactions(token: string) { return request<MoneyTransaction[]>("/api/transactions", token); }
 export function getFinancialSummary(token: string) { return request<FinancialSummary>("/api/summaries", token); }
 export function getAccountBalances(token: string) { return request<AccountBalances>("/api/summaries/balances", token); }

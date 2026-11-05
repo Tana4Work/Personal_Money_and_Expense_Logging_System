@@ -278,6 +278,48 @@ app.post("/api/transactions/payment", asyncRoute(async (req, res) => {
   res.status(201).json(transactionResponse(transaction));
 }));
 
+app.post("/api/transactions/repayment", asyncRoute(async (req, res) => {
+  const user = await requireUser(req, res);
+  if (!user) return;
+  const amount = parsePositiveAmount(req.body?.totalAmount);
+  if (!amount) { res.status(400).json({ error: "A valid positive amount is required." }); return; }
+  const transactionDate = parseCalendarDate(req.body?.date);
+  if (!transactionDate) { res.status(400).json({ error: "A valid calendar date in YYYY-MM-DD form is required." }); return; }
+  const sourceAccountId = Number(req.body?.sourceAccountId);
+  const receivingAccountId = Number(req.body?.receivingAccountId);
+  if (!Number.isInteger(sourceAccountId) || sourceAccountId <= 0) { res.status(400).json({ error: "A valid bank source account is required." }); return; }
+  if (!Number.isInteger(receivingAccountId) || receivingAccountId <= 0) { res.status(400).json({ error: "A valid credit-card destination is required." }); return; }
+
+  const prisma = getPrisma();
+  const sourceAccount = await prisma.account.findUnique({ where: { id: sourceAccountId } });
+  if (!sourceAccount) { res.status(404).json({ error: "Source account not found." }); return; }
+  if (sourceAccount.ownerUserId !== user.id) { res.status(403).json({ error: "Source account access is not allowed." }); return; }
+  if (sourceAccount.type !== AccountType.CASH || sourceAccount.subtype !== AccountSubtype.BANK) {
+    res.status(400).json({ error: "Repayments must use a bank account." }); return;
+  }
+
+  const receivingAccount = await prisma.account.findUnique({ where: { id: receivingAccountId } });
+  if (!receivingAccount) { res.status(404).json({ error: "Credit-card account not found." }); return; }
+  if (receivingAccount.ownerUserId !== user.id) { res.status(403).json({ error: "Credit-card account access is not allowed." }); return; }
+  if (receivingAccount.type !== AccountType.LOAN_TAKEN || receivingAccount.subtype !== AccountSubtype.CREDIT_CARD) {
+    res.status(400).json({ error: "Repayments must use a credit-card account." }); return;
+  }
+
+  const transaction = await prisma.transaction.create({
+    data: {
+      ownerUserId: user.id,
+      formType: TransactionFormType.PAYMENT_OR_CHARGE,
+      sourceAccountId,
+      receivingAccountId,
+      totalAmount: amount,
+      transactionDate,
+      allocations: { create: [{ accountId: receivingAccountId, allocationType: AllocationType.REPAYMENT, amount }] },
+    },
+    include: transactionInclude,
+  });
+  res.status(201).json(transactionResponse(transaction));
+}));
+
 app.get("/api/transactions", asyncRoute(async (req, res) => {
   const user = await requireUser(req, res);
   if (!user) return;
