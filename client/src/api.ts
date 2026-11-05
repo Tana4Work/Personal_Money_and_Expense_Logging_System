@@ -24,6 +24,9 @@ async function request<T>(path: string, token?: string, init: RequestInit = {}):
 export function login(email: string, password: string) {
   return request<{ token: string; expiresAt: string; user: SafeUser }>("/api/auth/login", undefined, { method: "POST", body: JSON.stringify({ email, password }) });
 }
+export function register(name: string, email: string, password: string) {
+  return request<{ user: SafeUser }>("/api/auth/register", undefined, { method: "POST", body: JSON.stringify({ name, email, password }) });
+}
 export function logout(token: string) { return request<void>("/api/auth/logout", token, { method: "POST" }); }
 export function getCurrentUser(token: string) { return request<{ user: SafeUser }>("/api/auth/me", token); }
 export function getAccounts(token: string) { return request<Account[]>("/api/accounts", token); }

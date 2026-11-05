@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { getAccountBalances, getAccounts, getAdminUsers, getCurrentUser, getFinancialSummary, getTransactions, login, logout, recordOpeningBalance, recordPayment, recordReceivedMoney, recordRepayment, setUserEnabled, type Account, type AccountBalances, type AdminUser, type FinancialSummary, type MoneyTransaction, type SafeUser } from "./api.js";
+import { getAccountBalances, getAccounts, getAdminUsers, getCurrentUser, getFinancialSummary, getTransactions, login, logout, recordOpeningBalance, recordPayment, recordReceivedMoney, recordRepayment, register, setUserEnabled, type Account, type AccountBalances, type AdminUser, type FinancialSummary, type MoneyTransaction, type SafeUser } from "./api.js";
 
 export default function App() {
   const [token, setToken] = useState<string | null>(null);
@@ -80,16 +80,27 @@ export default function App() {
 }
 
 function LoginScreen({ busy, error, onSubmit }: { busy: boolean; error: string; onSubmit: (email: string, password: string) => Promise<void> }) {
-  const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
+  const [mode, setMode] = useState<"login" | "register">("login");
+  const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [message, setMessage] = useState(""); const [localError, setLocalError] = useState("");
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setLocalError(""); setMessage("");
+    if (mode === "login") { await onSubmit(email, password); return; }
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[^A-Za-z0-9]/.test(password)) { setLocalError("Password must be at least 8 characters and include a capital letter and special character."); return; }
+    try { await register(name, email, password); setMessage("Account created successfully. Please sign in."); setMode("login"); setName(""); setPassword(""); }
+    catch (reason) { setLocalError(reason instanceof Error ? reason.message : "Unable to create your account."); }
+  }
   return <main className="login-page">
     <section className="login-card" aria-labelledby="login-title">
-      <p className="eyebrow">PERSONAL FINANCE</p><h1 id="login-title">Welcome back</h1><p className="text-secondary">Sign in to view your financial accounts.</p>
-      {error && <p className="alert alert-danger" role="alert">{error}</p>}
-      <form onSubmit={(event) => { event.preventDefault(); void onSubmit(email, password); }}>
+      <p className="eyebrow">PERSONAL FINANCE</p><h1 id="login-title">{mode === "login" ? "Welcome back" : "Create your account"}</h1><p className="text-secondary">{mode === "login" ? "Sign in to view your financial accounts." : "Create a normal user account to start tracking your money."}</p>
+      {(error || localError) && <p className="alert alert-danger" role="alert">{error || localError}</p>}{message && <p className="alert alert-success" role="status">{message}</p>}
+      <form onSubmit={(event) => void submit(event)}>
+        {mode === "register" && <><label className="form-label" htmlFor="name">Name</label><input className="form-control mb-3" id="name" type="text" autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} required /></>}
         <label className="form-label" htmlFor="email">Email address</label><input className="form-control mb-3" id="email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required />
-        <label className="form-label" htmlFor="password">Password</label><input className="form-control" id="password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
-        <button className="btn btn-primary w-100 mt-4" type="submit" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
+        <label className="form-label" htmlFor="password">Password</label><input className="form-control" id="password" type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} value={password} onChange={(event) => setPassword(event.target.value)} required />
+        {mode === "register" && <small className="text-secondary">Use at least 8 characters, including one capital letter and one special character.</small>}
+        <button className="btn btn-primary w-100 mt-4" type="submit" disabled={busy}>{mode === "login" ? (busy ? "Signing in…" : "Sign in") : "Create account"}</button>
       </form>
+      <button className="btn btn-link w-100 mt-2" type="button" onClick={() => { setMode(mode === "login" ? "register" : "login"); setLocalError(""); setMessage(""); }}>{mode === "login" ? "Create a new account" : "Back to sign in"}</button>
     </section>
   </main>;
 }

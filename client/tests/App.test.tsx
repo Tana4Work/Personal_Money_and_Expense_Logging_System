@@ -175,4 +175,20 @@ describe("authentication and account UI", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4));
     expect(fetchMock.mock.calls[3][0]).toBe("/api/admin/users/1/status");
   });
+
+  it("registers a normal user and returns to sign in with a notification", async () => {
+    const fetchMock = vi.fn().mockImplementationOnce(() => response({ user: { id: 7, name: "New User", email: "new.user@test.local", role: "USER" } }));
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: "Create a new account" }));
+    await user.type(screen.getByLabelText("Name"), "New User");
+    await user.type(screen.getByLabelText("Email address"), "new.user@test.local");
+    await user.type(screen.getByLabelText("Password"), "Register!1");
+    await user.click(screen.getByRole("button", { name: "Create account" }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Account created successfully. Please sign in."));
+    expect(screen.getByRole("heading", { name: "Welcome back" })).toBeInTheDocument();
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/auth/register");
+    expect(JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string)).toEqual({ name: "New User", email: "new.user@test.local", password: "Register!1" });
+  });
 });

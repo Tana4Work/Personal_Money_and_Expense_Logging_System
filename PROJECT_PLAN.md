@@ -115,6 +115,10 @@ Recommended features:
 
 The exact Sprint 2 and Sprint 3 allocation may change, but every baseline requirement must remain mapped to a feature, sprint, acceptance criterion or verification target, test, and status.
 
+### Follow-up feature F-07: User registration
+
+F-07 is a post-Sprint-1 follow-up on branch `SP1-F07-user-registration`. It adds self-registration for normal `USER` accounts without changing the six-feature Sprint 1 boundary. Registration requires a name, unique email, and a password with at least 8 characters, one capital letter, and one special character. New users receive the standard Bank Account, Credit Card, Salary, Dining, and Groceries accounts. Registration returns a success notification and requires the user to sign in manually; it does not create a session automatically. Administrator accounts remain seed/admin controlled.
+
 ## Sprint 1 feature plan
 
 ### F-01 Authentication and role access
