@@ -89,6 +89,15 @@ const transactionInclude = {
 
 app.get("/api/health", (_req, res) => res.status(200).json({ status: "ok", service: "Personal Money API" }));
 
+app.get("/api/ready", async (_req, res) => {
+  try {
+    await getPrisma().$queryRaw`SELECT 1`;
+    res.status(200).json({ status: "ready", db: "connected" });
+  } catch {
+    res.status(503).json({ status: "not_ready" });
+  }
+});
+
 app.post("/api/auth/register", asyncRoute(async (req, res) => {
   const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
   const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
