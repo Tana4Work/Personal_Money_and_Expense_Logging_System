@@ -10,7 +10,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
-    "prisma:seed": "node --env-file=.env --import tsx/esm prisma/seed.ts",
+    "prisma:seed": "node --env-file-if-exists=.env --import tsx/esm prisma/seed.ts",
     "test": "vitest run"
   },
   "prisma": {
