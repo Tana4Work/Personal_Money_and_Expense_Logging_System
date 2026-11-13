@@ -11,7 +11,7 @@ afterAll(async () => { await prisma.$disconnect(); });
 describe("API readiness", () => {
   it("returns ready when the database query succeeds", async () => {
     const query = vi.spyOn(prisma, "$queryRaw").mockResolvedValueOnce([1] as never);
-    await request(app).get("/api/ready").expect(200, { status: "ready", db: "connected" });
+    await request(app).get("/api/ready").expect(201, { status: "ready", db: "connected" });
     expect(query).toHaveBeenCalledOnce();
   });
 
