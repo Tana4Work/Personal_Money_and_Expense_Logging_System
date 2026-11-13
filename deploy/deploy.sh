@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ==============================================================================
-# TokTickIT — Idempotent Google Cloud Run Deployment Script
+# Personal Money & Expense Logging System — Idempotent Google Cloud Run Deployment Script
 # ==============================================================================
 # Usage:
 #   ./deploy/deploy.sh [--demo]
@@ -100,33 +100,33 @@ fi
 
 # ------------------------------------------------------------------------------
 # Resource names
-# ⚠️ The lab guide refers to these names (toktickit, toktickit-pg,
-#    toktickit-runner, ...) and deploy.yml / release.sh / teardown.sh use the
+# ⚠️ The lab guide refers to these names (pmels, pmels-pg,
+#    pmels-runner, ...) and deploy.yml / release.sh / teardown.sh use the
 #    same ones. Keep them unless the guide says otherwise.
 # CHANGE ME: rename only if your group uses its own naming (then rename it in
 #            deploy.yml, release.sh, teardown.sh and the tests too).
 # ------------------------------------------------------------------------------
-REPO_NAME="toktickit"
-SQL_INSTANCE="toktickit-pg"
-DB_NAME="toktickit"
-DB_USER="toktickit"
-SERVICE_NAME="toktickit"
-MIGRATE_JOB_NAME="toktickit-migrate"
-SA_NAME="toktickit-runner"
+REPO_NAME="pmels"
+SQL_INSTANCE="pmels-pg"
+DB_NAME="pmels"
+DB_USER="pmels"
+SERVICE_NAME="pmels"
+MIGRATE_JOB_NAME="pmels-migrate"
+SA_NAME="pmels-runner"
 SA_EMAIL="${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
 SQL_CONN_NAME="${PROJECT_ID}:${REGION}:${SQL_INSTANCE}"
 IMAGE_URI="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${SERVICE_NAME}:latest"
 
 # Secret Manager secret names (values are never stored in this repo).
-SECRET_DB_URL="toktickit-database-url"
-SECRET_ADMIN_PASS="toktickit-admin-password"
-SECRET_DEMO_PASS="toktickit-demo-password"
+SECRET_DB_URL="pmels-database-url"
+SECRET_ADMIN_PASS="pmels-admin-password"
+SECRET_DEMO_PASS="pmels-demo-password"
 
 GENERATED_ADMIN_PASSWORD=""
 GENERATED_DEMO_PASSWORD=""
 
 echo "=================================================================="
-echo "TokTickIT Cloud Run Deployment"
+echo "Personal Money & Expense Logging System Cloud Run Deployment"
 echo "Project : ${PROJECT_ID}"
 echo "Region  : ${REGION}"
 echo "Demo    : ${SEED_DEMO_DATA}"
@@ -151,13 +151,13 @@ run_cmd gcloud services enable \
 # ==============================================================================
 if [ "$DRY_RUN" = "1" ]; then
   run_cmd gcloud artifacts repositories describe "$REPO_NAME" --location "$REGION" --project "$PROJECT_ID"
-  run_cmd gcloud artifacts repositories create "$REPO_NAME" --repository-format=docker --location "$REGION" --description="TokTickIT container repository" --project "$PROJECT_ID"
+  run_cmd gcloud artifacts repositories create "$REPO_NAME" --repository-format=docker --location "$REGION" --description="Personal Money & Expense Logging System container repository" --project "$PROJECT_ID"
 else
   if ! gcloud artifacts repositories describe "$REPO_NAME" --location "$REGION" --project "$PROJECT_ID" >/dev/null 2>&1; then
     run_cmd gcloud artifacts repositories create "$REPO_NAME" \
       --repository-format=docker \
       --location "$REGION" \
-      --description="TokTickIT container repository" \
+      --description="Personal Money & Expense Logging System container repository" \
       --project "$PROJECT_ID"
   fi
 fi
@@ -207,11 +207,11 @@ fi
 # ==============================================================================
 if [ "$DRY_RUN" = "1" ]; then
   run_cmd gcloud iam service-accounts describe "$SA_EMAIL" --project "$PROJECT_ID"
-  run_cmd gcloud iam service-accounts create "$SA_NAME" --display-name="TokTickIT Cloud Run Service Account" --project "$PROJECT_ID"
+  run_cmd gcloud iam service-accounts create "$SA_NAME" --display-name="Personal Money & Expense Logging System Cloud Run Service Account" --project "$PROJECT_ID"
 else
   if ! gcloud iam service-accounts describe "$SA_EMAIL" --project "$PROJECT_ID" >/dev/null 2>&1; then
     run_cmd gcloud iam service-accounts create "$SA_NAME" \
-      --display-name="TokTickIT Cloud Run Service Account" \
+      --display-name="Personal Money & Expense Logging System Cloud Run Service Account" \
       --project "$PROJECT_ID"
   fi
 fi
@@ -269,7 +269,7 @@ fi
 # 8. Optional Demo Password in Secret Manager when --demo is passed
 #    Only used to seed demo users (./deploy/deploy.sh --demo).
 # ==============================================================================
-JOB_SECRETS="DATABASE_URL=${SECRET_DB_URL}:latest,ADMIN_PASSWORD=${SECRET_ADMIN_PASS}:latest"
+JOB_SECRETS="DATABASE_URL=${SECRET_DB_URL}:latest,SEED_ADMIN_PASSWORD=${SECRET_ADMIN_PASS}:latest"
 if [ "$SEED_DEMO_DATA" = "true" ]; then
   if [ "$DRY_RUN" = "1" ]; then
     run_cmd gcloud secrets describe "$SECRET_DEMO_PASS" --project "$PROJECT_ID"
@@ -282,7 +282,7 @@ if [ "$SEED_DEMO_DATA" = "true" ]; then
       printf "%s" "$GENERATED_DEMO_PASSWORD" | gcloud secrets versions add "$SECRET_DEMO_PASS" --data-file=- --project "$PROJECT_ID"
     fi
   fi
-  JOB_SECRETS="${JOB_SECRETS},DEMO_USER_PASSWORD=${SECRET_DEMO_PASS}:latest"
+  JOB_SECRETS="${JOB_SECRETS},SEED_USER_PASSWORD=${SECRET_DEMO_PASS}:latest"
 fi
 
 # ------------------------------------------------------------------------------
@@ -317,7 +317,7 @@ run_cmd gcloud builds submit \
 #        service, so a broken migration never reaches users.
 #     CHANGE ME: `--args` (prisma migrate deploy && npm run prisma:seed) is
 #        Prisma/npm specific — use your stack's migrate/seed command.
-#     deploy.yml / release.sh later re-run this same job (name: toktickit-migrate).
+#     deploy.yml / release.sh later re-run this same job (name: pmels-migrate).
 # ==============================================================================
 run_cmd gcloud run jobs deploy "$MIGRATE_JOB_NAME" \
   --image "$IMAGE_URI" \
@@ -327,7 +327,7 @@ run_cmd gcloud run jobs deploy "$MIGRATE_JOB_NAME" \
   --set-secrets "$JOB_SECRETS" \
   --set-env-vars "NODE_ENV=production,TZ=Asia/Bangkok,SEED_DEMO_DATA=${SEED_DEMO_DATA}" \
   --command "sh" \
-  --args "-c,npx prisma migrate deploy && npm run prisma:seed" \
+  --args "-c,npx prisma migrate deploy && node dist/prisma/seed.js" \
   --max-retries 1 \
   --task-timeout 300s \
   --project "$PROJECT_ID"
@@ -379,7 +379,7 @@ printf '%s\n' "Deployment Completed!"
 printf '%s\n' "Service URL    : ${SERVICE_URL}"
 printf '%s\n' "Health Check   : ${SERVICE_URL}/api/health"
 printf '%s\n' "Readiness Check: ${SERVICE_URL}/api/ready"
-printf '%s\n' "Admin Email    : john.smith@example.com (mustChangePassword: true)"
+printf '%s\n' "Admin Email    : system.admin@money.local (password in Secret Manager: ${SECRET_ADMIN_PASS})"
 printf '%s\n' "Admin Password : Stored in Secret Manager: ${SECRET_ADMIN_PASS} (not printed)."
 if [ "$SEED_DEMO_DATA" = "true" ]; then
   printf '%s\n' "Demo Password  : Stored in Secret Manager: ${SECRET_DEMO_PASS} (not printed)."

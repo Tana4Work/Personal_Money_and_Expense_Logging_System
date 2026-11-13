@@ -89,6 +89,8 @@ ENV NODE_ENV=production
 ENV TZ=Asia/Bangkok
 # CHANGE ME: PORT must match your app AND `--port` in deploy/deploy.sh (step 11).
 ENV PORT=3000
+# The Express server serves the built React app from here (see server/src/app.ts).
+ENV STATIC_DIR=/app/client/dist
 EXPOSE 3000
 
 # Do not run as root inside the container.
@@ -97,4 +99,4 @@ USER node
 # --- Start command ------------------------------------------------------------
 # CHANGE ME: replace `node dist/index.js` with your app's start command.
 ENTRYPOINT ["./docker-entrypoint.sh"]
-CMD ["node", "dist/index.js"]
+CMD ["node", "dist/src/index.js"]

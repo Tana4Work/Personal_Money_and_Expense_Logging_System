@@ -1,5 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
+import path from "node:path";
 import { AccountSubtype, AccountType, AllocationType, Prisma, TransactionFormType, UserRole } from "@prisma/client";
 import { clearSession, createSession, currentUser, endUserSessions, hashPassword, readBearerToken, safeUser, verifyPassword, type SafeUser } from "./auth.js";
 import { seedAccountsForUser } from "./account-seed.js";
@@ -413,6 +414,14 @@ app.patch("/api/admin/users/:userId/status", asyncRoute(async (req, res) => {
   if (!updated.enabled) await endUserSessions(userId);
   res.status(200).json(updated);
 }));
+
+// Serve the built React app when STATIC_DIR is set (in the Docker image).
+// Unset in tests and local `npm run dev`, so they are unaffected.
+const staticDir = process.env.STATIC_DIR;
+if (staticDir) {
+  app.use(express.static(staticDir));
+  app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(staticDir, "index.html")));
+}
 
 app.use((_error: unknown, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ error: "Unable to complete the request." });
