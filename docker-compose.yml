@@ -1,10 +1,72 @@
+name: pmels
+
 services:
-  frontend:
+  db:
+    image: postgres:16-alpine
+    container_name: pmels-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pmels}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pmels}
+      POSTGRES_DB: ${POSTGRES_DB:-pmels}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pmels} -d ${POSTGRES_DB:-pmels}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: pmels-migrate
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-pmels}:${POSTGRES_PASSWORD:-pmels}@db:5432/${POSTGRES_DB:-pmels}?schema=public
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-AdminInitial123!}
+      SEED_USER_PASSWORD: ${SEED_USER_PASSWORD:-DemoInitial123!}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
+    command: ["sh", "-c", "npx prisma migrate deploy && npm run prisma:seed"]
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: pmels-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      NODE_ENV: production
+      TZ: Asia/Bangkok
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-pmels}:${POSTGRES_PASSWORD:-pmels}@db:5432/${POSTGRES_DB:-pmels}?schema=public
+    ports:
+      - "3000:3000"
+
+  client:
     build:
       context: ./client
-    container_name: personal-money-expense-frontend
-    ports:
-      - "127.0.0.1:5173:80"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ""
+    container_name: pmels-client
     restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - "5173:80"
+
+volumes:
+  postgres_data:
