@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ==============================================================================
-# TokTickIT — Google Cloud Run & Cloud SQL Teardown Script
+# Personal Money & Expense Logging System — Google Cloud Run & Cloud SQL Teardown Script
 # ==============================================================================
 # Usage:
 #   ./deploy/teardown.sh
@@ -54,19 +54,19 @@ fi
 # ------------------------------------------------------------------------------
 # Resource names (CHANGE ME: must match deploy/deploy.sh)
 # ------------------------------------------------------------------------------
-REPO_NAME="toktickit"
-SQL_INSTANCE="toktickit-pg"
-SERVICE_NAME="toktickit"
-MIGRATE_JOB_NAME="toktickit-migrate"
-SA_NAME="toktickit-runner"
+REPO_NAME="pmels"
+SQL_INSTANCE="pmels-pg"
+SERVICE_NAME="pmels"
+MIGRATE_JOB_NAME="pmels-migrate"
+SA_NAME="pmels-runner"
 SA_EMAIL="${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
 
-SECRET_DB_URL="toktickit-database-url"
-SECRET_ADMIN_PASS="toktickit-admin-password"
-SECRET_DEMO_PASS="toktickit-demo-password"
+SECRET_DB_URL="pmels-database-url"
+SECRET_ADMIN_PASS="pmels-admin-password"
+SECRET_DEMO_PASS="pmels-demo-password"
 
 echo "=================================================================="
-echo "WARNING: This will permanently delete TokTickIT resources in:"
+echo "WARNING: This will permanently delete Personal Money & Expense Logging System resources in:"
 echo "  Project : ${PROJECT_ID}"
 echo "  Region  : ${REGION}"
 echo "Resources to be deleted:"
