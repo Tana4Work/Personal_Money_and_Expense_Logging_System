@@ -126,6 +126,8 @@ jobs:
         working-directory: ./server
         env:
           DATABASE_URL: postgresql://toktickit:toktickit@localhost:5432/toktickit?schema=public
+          SEED_USER_PASSWORD: ci-only-user-password
+          SEED_ADMIN_PASSWORD: ci-only-admin-password
         run: |
           npm ci
           npx prisma migrate deploy
