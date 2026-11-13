@@ -23,7 +23,6 @@ class SmokeTests(unittest.TestCase):
             '/api/health': b'{"status":"ok"}',
             '/api/ready': b'{"db":"connected"}',
             '/': b'<html></html>',
-            '/api/categories': b'[{"id":1}]',
             '/api/auth/login': b'{"token":"test-session"}',
             '/api/auth/me': b'{"id":1}',
             '/api/auth/logout': b'{}',
@@ -33,7 +32,7 @@ class SmokeTests(unittest.TestCase):
     def test_public_checks_pass_and_skip_optional_login(self):
         with patch.object(smoke, 'request', side_effect=self.response) as req:
             smoke.check('https://demo.test')
-            self.assertEqual(req.call_count, 4)
+            self.assertEqual(req.call_count, 3)
 
     @patch.dict('os.environ', {}, clear=True)
     def test_db_not_ready_fails_even_when_http_responds(self):
