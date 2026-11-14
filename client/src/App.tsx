@@ -91,7 +91,7 @@ function LoginScreen({ busy, error, onSubmit }: { busy: boolean; error: string; 
   }
   return <main className="login-page">
     <section className="login-card" aria-labelledby="login-title">
-      <p className="eyebrow">PERSONAL FINANCE</p><h1 id="login-title">{mode === "login" ? "Welcome back" : "Create your account"}</h1><p className="text-secondary">{mode === "login" ? "Sign in to view your financial accounts." : "Create a normal user account to start tracking your money."}</p>
+      <p className="eyebrow">PERSONAL FINANCE</p><h1 id="login-title">{mode === "login" ? "Welcome back" : "Create your account"}</h1><p className="text-secondary">{mode === "login" ? "Sign in to view your financial accounts." : "Create a normal user account to start tracking your money."}</p><p className="small text-muted">Lab 5 deployment proof release.</p>
       {(error || localError) && <p className="alert alert-danger" role="alert">{error || localError}</p>}{message && <p className="alert alert-success" role="status">{message}</p>}
       <form onSubmit={(event) => void submit(event)}>
         {mode === "register" && <><label className="form-label" htmlFor="name">Name</label><input className="form-control mb-3" id="name" type="text" autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} required /></>}
