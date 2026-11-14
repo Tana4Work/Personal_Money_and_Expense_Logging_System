@@ -1,16 +1,38 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { getAccountBalances, getAccounts, getAdminUsers, getCurrentUser, getFinancialSummary, getTransactions, login, logout, recordOpeningBalance, recordPayment, recordReceivedMoney, recordRepayment, register, setUserEnabled, type Account, type AccountBalances, type AdminUser, type FinancialSummary, type MoneyTransaction, type SafeUser } from "./api.js";
 
+const SESSION_TOKEN_KEY = "pmels-session-token";
+
 export default function App() {
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(() => sessionStorage.getItem(SESSION_TOKEN_KEY));
   const [user, setUser] = useState<SafeUser | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [restoringSession, setRestoringSession] = useState(() => Boolean(sessionStorage.getItem(SESSION_TOKEN_KEY)));
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [balances, setBalances] = useState<AccountBalances>({ accounts: [] });
   const [summary, setSummary] = useState<FinancialSummary>({ income: "0", expenses: "0" });
   const [transactions, setTransactions] = useState<MoneyTransaction[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
+
+  useEffect(() => {
+    if (!token || user) {
+      if (!token) setRestoringSession(false);
+      return;
+    }
+    let active = true;
+    void getCurrentUser(token)
+      .then((identity) => { if (active) setUser(identity.user); })
+      .catch((reason: unknown) => {
+        if (!active) return;
+        if (reason instanceof Error && reason.message === "Authentication is required.") {
+          sessionStorage.removeItem(SESSION_TOKEN_KEY);
+          setToken(null);
+        } else setError(reason instanceof Error ? reason.message : "Unable to restore your session.");
+      })
+      .finally(() => { if (active) setRestoringSession(false); });
+    return () => { active = false; };
+  }, [token, user]);
 
   useEffect(() => {
     if (!token || !user) return;
@@ -23,7 +45,7 @@ export default function App() {
 
   async function signIn(email: string, password: string) {
     setBusy(true); setError("");
-    try { const result = await login(email, password); const identity = await getCurrentUser(result.token); setToken(result.token); setUser(identity.user); }
+    try { const result = await login(email, password); const identity = await getCurrentUser(result.token); sessionStorage.setItem(SESSION_TOKEN_KEY, result.token); setToken(result.token); setUser(identity.user); }
     catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to sign in."); }
     finally { setBusy(false); }
   }
@@ -33,7 +55,7 @@ export default function App() {
     setBusy(true);
     try { if (currentToken) await logout(currentToken); }
     catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to sign out."); }
-    finally { setToken(null); setUser(null); setAccounts([]); setBalances({ accounts: [] }); setSummary({ income: "0", expenses: "0" }); setTransactions([]); setUsers([]); setBusy(false); }
+    finally { sessionStorage.removeItem(SESSION_TOKEN_KEY); setToken(null); setUser(null); setAccounts([]); setBalances({ accounts: [] }); setSummary({ income: "0", expenses: "0" }); setTransactions([]); setUsers([]); setBusy(false); }
   }
 
   async function changeEnabled(target: AdminUser) {
@@ -69,6 +91,7 @@ export default function App() {
     setAccounts(loadedAccounts); setBalances(loadedBalances); setSummary(loadedSummary); setTransactions(loadedTransactions);
   }
 
+  if (restoringSession) return <main className="container py-4"><p role="status">Restoring your session…</p></main>;
   if (!user || !token) return <LoginScreen busy={busy} error={error} onSubmit={signIn} />;
   return <div className="app-shell">
     <header className="topbar"><div className="container d-flex justify-content-between align-items-center py-3"><a className="brand" href="#home">Personal Money</a><div className="d-flex align-items-center gap-3"><span className="user-label">{user.name} <span className="role-pill">{user.role}</span></span><button className="btn btn-outline-light btn-sm" type="button" disabled={busy} onClick={() => void signOut()}>Log out</button></div></div></header>
