@@ -8,7 +8,7 @@ function response(body: unknown, status = 200) {
 }
 
 describe("authentication and account UI", () => {
-  beforeEach(() => { vi.restoreAllMocks(); });
+  beforeEach(() => { vi.restoreAllMocks(); sessionStorage.clear(); });
 
   it("logs in, saves an opening bank balance and date, and logs out", async () => {
     const fetchMock = vi.fn()
@@ -27,6 +27,7 @@ describe("authentication and account UI", () => {
     await user.type(screen.getByLabelText("Password"), "A synthetic password");
     await user.click(screen.getByRole("button", { name: "Sign in" }));
     expect(await screen.findByRole("heading", { name: "Welcome, Demo User" })).toBeInTheDocument();
+    expect(sessionStorage.getItem("pmels-session-token")).toBe("user-session");
     expect(fetchMock.mock.calls[1][0]).toBe("/api/auth/me");
     expect(await screen.findByRole("cell", { name: "Bank Account" })).toBeInTheDocument();
     expect(fetchMock.mock.calls[2][0]).toBe("/api/accounts");
@@ -39,8 +40,40 @@ describe("authentication and account UI", () => {
     expect(JSON.parse((fetchMock.mock.calls[6][1] as RequestInit).body as string)).toEqual({ amount: "1250.5", date: "2026-11-03" });
     await user.click(screen.getByRole("button", { name: "Log out" }));
     expect(await screen.findByRole("heading", { name: "Welcome back" })).toBeInTheDocument();
+    expect(sessionStorage.getItem("pmels-session-token")).toBeNull();
     expect(fetchMock.mock.calls[7][0]).toBe("/api/auth/logout");
     expect(new Headers((fetchMock.mock.calls[7][1] as RequestInit).headers).get("Authorization")).toBe("Bearer user-session");
+  });
+
+  it("restores a valid session after the app reloads", async () => {
+    sessionStorage.setItem("pmels-session-token", "stored-session");
+    const fetchMock = vi.fn()
+      .mockImplementationOnce(() => response({ user: { id: 1, name: "Demo User", email: "demo.user@money.local", role: "USER" } }))
+      .mockImplementationOnce(() => response([{ id: 1, name: "Bank Account", type: "CASH", subtype: "BANK", openingBalance: "0", openingBalanceDate: null, createdAt: "2026-11-03T00:00:00.000Z" }]))
+      .mockImplementationOnce(() => response({ accounts: [{ accountId: 1, balance: "0" }] }))
+      .mockImplementationOnce(() => response({ income: "0", expenses: "0" }))
+      .mockImplementationOnce(() => response([]));
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Welcome, Demo User" })).toBeInTheDocument();
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/auth/me");
+    expect(new Headers((fetchMock.mock.calls[0][1] as RequestInit).headers).get("Authorization")).toBe("Bearer stored-session");
+    expect(await screen.findByRole("cell", { name: "Bank Account" })).toBeInTheDocument();
+    expect(sessionStorage.getItem("pmels-session-token")).toBe("stored-session");
+  });
+
+  it("clears an invalid stored session and returns to sign in", async () => {
+    sessionStorage.setItem("pmels-session-token", "expired-session");
+    const fetchMock = vi.fn().mockImplementationOnce(() => response({ error: "Authentication is required." }, 401));
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Welcome back" })).toBeInTheDocument();
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/auth/me");
+    expect(sessionStorage.getItem("pmels-session-token")).toBeNull();
   });
 
   it("records received salary and refreshes financial history", async () => {
