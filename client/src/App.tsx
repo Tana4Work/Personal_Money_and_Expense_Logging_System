@@ -22,15 +22,19 @@ export default function App() {
     }
     let active = true;
     void getCurrentUser(token)
-      .then((identity) => { if (active) setUser(identity.user); })
+      .then((identity) => {
+        if (!active) return;
+        setUser(identity.user);
+        setRestoringSession(false);
+      })
       .catch((reason: unknown) => {
         if (!active) return;
         if (reason instanceof Error && reason.message === "Authentication is required.") {
           sessionStorage.removeItem(SESSION_TOKEN_KEY);
           setToken(null);
         } else setError(reason instanceof Error ? reason.message : "Unable to restore your session.");
-      })
-      .finally(() => { if (active) setRestoringSession(false); });
+        setRestoringSession(false);
+      });
     return () => { active = false; };
   }, [token, user]);
 
