@@ -19,6 +19,11 @@ describe("authentication and account UI", () => {
       .mockImplementationOnce(() => response({ income: "0", expenses: "0" }))
       .mockImplementationOnce(() => response([]))
       .mockImplementationOnce(() => response({ id: 1, name: "Bank Account", type: "CASH", subtype: "BANK", openingBalance: "1250.5", openingBalanceDate: "2026-11-03T00:00:00.000Z", createdAt: "2026-11-03T00:00:00.000Z" }))
+      // #55: saving an opening balance now reloads accounts, balances, summary and history.
+      .mockImplementationOnce(() => response([{ id: 1, name: "Bank Account", type: "CASH", subtype: "BANK", openingBalance: "1250.5", openingBalanceDate: "2026-11-03T00:00:00.000Z", createdAt: "2026-11-03T00:00:00.000Z" }]))
+      .mockImplementationOnce(() => response({ accounts: [{ accountId: 1, balance: "1250.5" }] }))
+      .mockImplementationOnce(() => response({ income: "0", expenses: "0" }))
+      .mockImplementationOnce(() => response([]))
       .mockImplementationOnce(() => response({}, 204));
     vi.stubGlobal("fetch", fetchMock);
     const user = userEvent.setup();
@@ -41,8 +46,8 @@ describe("authentication and account UI", () => {
     await user.click(screen.getByRole("button", { name: "Log out" }));
     expect(await screen.findByRole("heading", { name: "Welcome back" })).toBeInTheDocument();
     expect(sessionStorage.getItem("pmels-session-token")).toBeNull();
-    expect(fetchMock.mock.calls[7][0]).toBe("/api/auth/logout");
-    expect(new Headers((fetchMock.mock.calls[7][1] as RequestInit).headers).get("Authorization")).toBe("Bearer user-session");
+    expect(fetchMock.mock.calls[11][0]).toBe("/api/auth/logout");
+    expect(new Headers((fetchMock.mock.calls[11][1] as RequestInit).headers).get("Authorization")).toBe("Bearer user-session");
   });
 
   it("restores a valid session after the app reloads", async () => {

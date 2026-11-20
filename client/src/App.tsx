@@ -70,8 +70,11 @@ export default function App() {
 
   async function saveOpeningBalance(accountId: number, amount: string, date: string) {
     if (!token) return;
-    const updated = await recordOpeningBalance(token, accountId, amount, date);
-    setAccounts((current) => current.map((account) => account.id === updated.id ? updated : account));
+    await recordOpeningBalance(token, accountId, amount, date);
+    // UF-02 / D-01 (#55): reload balances and summaries too, so the overview cards and the
+    // Current balance column show the new opening balance immediately, like the other forms.
+    const [loadedAccounts, loadedBalances, loadedSummary, loadedTransactions] = await Promise.all([getAccounts(token), getAccountBalances(token), getFinancialSummary(token), getTransactions(token)]);
+    setAccounts(loadedAccounts); setBalances(loadedBalances); setSummary(loadedSummary); setTransactions(loadedTransactions);
   }
 
   async function saveReceivedMoney(totalAmount: string, date: string, receivingAccountId: number, incomeAccountId: number) {
