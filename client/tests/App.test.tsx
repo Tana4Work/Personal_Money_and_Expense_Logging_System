@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../src/App.js";
@@ -19,6 +19,11 @@ describe("authentication and account UI", () => {
       .mockImplementationOnce(() => response({ income: "0", expenses: "0" }))
       .mockImplementationOnce(() => response([]))
       .mockImplementationOnce(() => response({ id: 1, name: "Bank Account", type: "CASH", subtype: "BANK", openingBalance: "1250.5", openingBalanceDate: "2026-11-03T00:00:00.000Z", createdAt: "2026-11-03T00:00:00.000Z" }))
+      // #55: saving an opening balance now reloads accounts, balances, summary and history.
+      .mockImplementationOnce(() => response([{ id: 1, name: "Bank Account", type: "CASH", subtype: "BANK", openingBalance: "1250.5", openingBalanceDate: "2026-11-03T00:00:00.000Z", createdAt: "2026-11-03T00:00:00.000Z" }]))
+      .mockImplementationOnce(() => response({ accounts: [{ accountId: 1, balance: "1250.5" }] }))
+      .mockImplementationOnce(() => response({ income: "0", expenses: "0" }))
+      .mockImplementationOnce(() => response([]))
       .mockImplementationOnce(() => response({}, 204));
     vi.stubGlobal("fetch", fetchMock);
     const user = userEvent.setup();
@@ -41,8 +46,8 @@ describe("authentication and account UI", () => {
     await user.click(screen.getByRole("button", { name: "Log out" }));
     expect(await screen.findByRole("heading", { name: "Welcome back" })).toBeInTheDocument();
     expect(sessionStorage.getItem("pmels-session-token")).toBeNull();
-    expect(fetchMock.mock.calls[7][0]).toBe("/api/auth/logout");
-    expect(new Headers((fetchMock.mock.calls[7][1] as RequestInit).headers).get("Authorization")).toBe("Bearer user-session");
+    expect(fetchMock.mock.calls[11][0]).toBe("/api/auth/logout");
+    expect(new Headers((fetchMock.mock.calls[11][1] as RequestInit).headers).get("Authorization")).toBe("Bearer user-session");
   });
 
   it("restores a valid session after the app reloads", async () => {
@@ -223,5 +228,44 @@ describe("authentication and account UI", () => {
     expect(screen.getByRole("heading", { name: "Welcome back" })).toBeInTheDocument();
     expect(fetchMock.mock.calls[0][0]).toBe("/api/auth/register");
     expect(JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string)).toEqual({ name: "New User", email: "new.user@test.local", password: "Register!1" });
+  });
+
+  // UF-02 / D-01 (Issue #55): after saving an opening balance, the overview card and the
+  // Current balance column must show the new balance immediately (AC-12, AC-34).
+  it("UF-02: refreshes the bank balance card and current balance after saving an opening balance", async () => {
+    sessionStorage.setItem("pmels-session-token", "stored-session");
+    const bankBefore = { id: 1, name: "Bank Account", type: "CASH", subtype: "BANK", openingBalance: "0", openingBalanceDate: null, createdAt: "2026-11-01T00:00:00.000Z" };
+    const bankAfter = { ...bankBefore, openingBalance: "10000", openingBalanceDate: "2026-11-01T00:00:00.000Z" };
+    let saved = false;
+    // Route by URL so the test does not depend on the order of the refresh requests.
+    const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+      if (url === "/api/auth/me") return response({ user: { id: 1, name: "Demo User", email: "demo.user@money.local", role: "USER" } });
+      if (url === "/api/accounts/1/opening-balance" && init?.method === "POST") { saved = true; return response(bankAfter); }
+      if (url === "/api/accounts") return response([saved ? bankAfter : bankBefore]);
+      if (url === "/api/summaries/balances") return response({ accounts: [{ accountId: 1, balance: saved ? "10000" : "0" }] });
+      if (url === "/api/summaries") return response({ income: "0", expenses: "0" });
+      if (url === "/api/transactions") return response([]);
+      return response({ error: `Unexpected request ${url}` }, 500);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByRole("cell", { name: "Bank Account" })).toBeInTheDocument();
+    const overview = screen.getByRole("region", { name: "Financial overview" });
+    const bankCard = within(overview).getByText("Bank balance").closest("article") as HTMLElement;
+    expect(within(bankCard).getByText("0")).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText("Opening balance amount"), "10000");
+    fireEvent.change(screen.getByLabelText("Opening balance date"), { target: { value: "2026-11-01" } });
+    await user.click(screen.getByRole("button", { name: "Save balance" }));
+
+    // The saved opening balance is shown in the accounts table (this part already worked).
+    const bankRow = (await screen.findByRole("cell", { name: "Bank Account" })).closest("tr") as HTMLElement;
+    await waitFor(() => expect(within(bankRow).getAllByRole("cell")[3]).toHaveTextContent("10000"));
+    // Defect check: the overview card and the Current balance column must also show 10000.
+    await waitFor(() => expect(within(bankCard).getByText("10000")).toBeInTheDocument());
+    expect(within(bankRow).getAllByRole("cell")[4]).toHaveTextContent("10000");
+    expect(fetchMock.mock.calls.filter(([url]) => url === "/api/summaries/balances").length).toBe(2);
   });
 });
