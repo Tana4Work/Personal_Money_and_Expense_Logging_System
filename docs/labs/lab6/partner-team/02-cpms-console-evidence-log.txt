@@ -1,0 +1,52 @@
+Console/API evidence log — Theme 7 UAT, tester Kan (Theme 6)
+URL https://pmels-203670311966.asia-southeast1.run.app | d5cbb13 / pmels-00008-85b | Browser: Chrome (Windows) via Claude in Chrome
+Times UTC+7. Tokens and passwords never recorded.
+
+[EV-UAT01-03c 13:47] USER-1 after Save balance (10000, 2026-11-01), UI still showed Bank balance 0 and Current balance 0.
+  GET /api/summaries/balances -> 200 {"accounts":[{"accountId":31,"balance":"10000"},{"accountId":32,"balance":"0"},{"accountId":34,"balance":"0"},{"accountId":35,"balance":"0"},{"accountId":33,"balance":"0"}]}
+  GET /api/summaries -> 200 {"income":"0","expenses":"0"}
+  => server holds 10000 for Bank Account (id 31); only the UI is stale (D-01).
+
+[EV-UAT04-02 13:47] const oldToken = sessionStorage.getItem("pmels-session-token") -> string, length 43, no error.
+[EV-UAT04-04 13:48] After Log out (login page shown):
+  fetch("/api/accounts", {Authorization: "Bearer " + oldToken}) -> 401 {"error":"Authentication is required."}
+
+[EV-UAT04-05 14:05] USER-1 signed in again: Bank 39000, Debt 500, Income 30000, Expenses 1500; Bank Account opening 10000 as-of 2026-11-01; history 3 rows (Credit Card: 1000 / Dining: 600, Groceries: 900 / Salary: 30000).
+
+[EV-UAT02-01 14:11] USER-2 card payment total 1500, Dining 600, Groceries 800 -> red alert "Allocation total must equal the transaction total."; Debt 0, Expenses 0, history empty.
+[EV-UAT02-02 14:11] Same with Groceries 899.99 -> network: POST /api/transactions/payment -> 400 (server-side rejection); same red alert; Debt 0, Expenses 0, history empty.
+[EV-UAT02-03 14:11] await api("GET","/api/transactions") -> 200 []
+[EV-UAT02-04 14:11] Reload -> still signed in as UAT Two; all cards 0; "No transactions recorded yet."
+[EV-UAT02-05 14:11] Control total 1500, Dining 600, Groceries 900 -> "Payment recorded successfully."; Debt 1500, Expenses 1500; 1 history row 2026-11-03 Payment/charge 1500 Dining: 600, Groceries: 900.
+
+[EV-UAT03-01 14:12] Tab 1 USER-3B card payment 1500 (Dining 600, Groceries 900) -> "Payment recorded successfully."; Debt 1500, Expenses 1500, 1 history row.
+[EV-UAT03-02 14:12] Tab 1 USER-3B:
+  await api("GET","/api/accounts") -> 200, 5 accounts: Bank Account id 41, Credit Card id 42, Salary id 43, Dining id 44, Groceries id 45
+  await api("GET","/api/transactions") -> 200, 1 transaction id 24 (PAYMENT_OR_CHARGE 1500, source Credit Card 42, allocations Dining 600 / Groceries 900)
+  => B_BANK=41, B_CARD=42, B_TX=24
+
+[EV-UAT03-03 14:13] Tab 2 USER-3A (user id 11): GET /api/accounts -> 200, own 5 accounts only: 46 Bank, 47 Credit Card, 48 Salary, 49 Dining, 50 Groceries (none of 41-45). A_BANK=46, A_SALARY=48
+[EV-UAT03-04 14:13] GET /api/accounts/41 -> 403 {"error":"Account access is not allowed."}
+[EV-UAT03-05 14:13] GET /api/transactions/24 -> 403 {"error":"Transaction access is not allowed."}
+[EV-UAT03-06 14:13] POST /api/transactions/repayment {totalAmount:"100",date:"2026-11-05",sourceAccountId:46,receivingAccountId:42} -> 403 {"error":"Credit-card account access is not allowed."}
+[EV-UAT03-07 14:13] POST /api/transactions/receive {totalAmount:"100",date:"2026-11-05",receivingAccountId:41,allocations:[{accountId:48,allocationType:"INCOME",amount:"100"}]} -> 403 {"error":"Receiving account access is not allowed."}
+[EV-UAT03-08 14:13] Tab 2 reload: UAT Three A, all cards 0, "No transactions recorded yet."
+[EV-UAT03-09 14:14] Tab 1 reload: UAT Three B Debt 1500, Expenses 1500; GET /api/transactions -> 200, exactly 1 transaction (id 24, 1500).
+
+[EV-UAT05-01 14:14] Tab 1 USER-5 receive 5000, 2026-11-02, Bank Account, Salary -> "Money received successfully."; Bank 5000, Income 5000, 1 history row (Salary: 5000).
+[EV-UAT05-02 14:14] Tab 1 USER-5: GET /api/admin/users -> 403 {"error":"Administrator access is required."}
+
+[EV-UAT03-10 14:18] Tab 2 logged out, signed in as ADMIN-01 (GET /api/auth/me -> 200 role ADMINISTRATOR). Page "User administration" with table Name/Email/Role/Status and Disable buttons; no overview cards, accounts or history.
+[EV-UAT03-11 14:18] ADMIN-01 GET /api/accounts, /api/transactions, /api/summaries, /api/summaries/balances, /api/transactions/24 -> each 403 {"error":"User access is required."}
+[EV-UAT03-12 14:18] ADMIN-01 GET /api/admin/users -> 200, 12 users; object keys only id,name,email,role,enabled,createdAt; the text "hash" does not appear anywhere in the body.
+
+[EV-UAT05-03 14:18] ADMIN-01 table: UAT Five / uat-kan-5@test.local / USER / Enabled / "Disable UAT Five".
+[EV-UAT05-04 14:18] Clicked "Disable UAT Five" only -> row shows Disabled, button "Enable UAT Five". No dialog. System Administrator and seeded demo users still Enabled.
+[EV-UAT05-05 14:18] Tab 1 USER-5 without reload: GET /api/accounts -> 401 {"error":"Authentication is required."}
+[EV-UAT05-06 14:18] Tab 1 reload -> login page shown.
+
+[EV-UAT05-07 14:20] Tab 1 sign in USER-5 with correct password (typed by Kan) while disabled -> red alert "Invalid email or password."; stayed on login page.
+[EV-UAT05-08a 14:20] USER-5 + wrong password -> "Invalid email or password." (POST /api/auth/login -> 401)
+[EV-UAT05-08b 14:20] nobody-kan@test.local (unknown) -> "Invalid email or password." (POST /api/auth/login -> 401). Same alert text both times.
+[EV-UAT05-09 14:21] ADMIN-01 clicked "Enable UAT Five" -> Enabled. All 12 users Enabled (admin and seeded demo users untouched).
+[EV-UAT05-10 14:22] Tab 1 USER-5 signed in with correct password after Enable -> POST /api/auth/login 200; workspace "Welcome, UAT Five"; Bank 5000, Income 5000; 1 history row 2026-11-02 Received money 5000 Salary: 5000.
