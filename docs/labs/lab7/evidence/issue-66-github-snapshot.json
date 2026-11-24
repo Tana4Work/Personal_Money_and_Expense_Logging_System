@@ -1,0 +1,1060 @@
+﻿{
+    "repository":  "Tana4Work/Personal_Money_and_Expense_Logging_System",
+    "windowStartUtc":  "2026-11-08T00:00:00.0000000+00:00",
+    "windowEndExclusiveUtc":  "2026-11-25T00:00:00.0000000+00:00",
+    "capturedAtUtc":  "2026-11-24T12:04:07.0675248+00:00",
+    "sourceCommands":  [
+                           "gh issue list --state all",
+                           "gh pr list --state all",
+                           "gh run list"
+                       ],
+    "closedIssuesInWindow":  [
+                                 {
+                                     "closedAt":  "2026-11-24T10:19:36Z",
+                                     "createdAt":  "2026-11-23T06:14:39Z",
+                                     "number":  65,
+                                     "state":  "CLOSED",
+                                     "title":  "LAB7-Release v1.1.0",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/65"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-24T10:07:40Z",
+                                     "createdAt":  "2026-11-23T06:14:20Z",
+                                     "number":  64,
+                                     "state":  "CLOSED",
+                                     "title":  "LAB7-Implementation",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/64"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-24T09:13:18Z",
+                                     "createdAt":  "2026-11-23T06:14:03Z",
+                                     "number":  63,
+                                     "state":  "CLOSED",
+                                     "title":  "LAB7-Contract revision",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/63"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-21T04:43:16Z",
+                                     "createdAt":  "2026-11-21T04:43:08Z",
+                                     "number":  59,
+                                     "state":  "CLOSED",
+                                     "title":  "Lab6-Partner test the controlled defect",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/59"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-20T07:39:03Z",
+                                     "createdAt":  "2026-11-20T07:14:05Z",
+                                     "number":  55,
+                                     "state":  "CLOSED",
+                                     "title":  "Lab6-UF-02, stale bank balance",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/55"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-20T07:14:23Z",
+                                     "createdAt":  "2026-11-20T07:13:53Z",
+                                     "number":  54,
+                                     "state":  "CLOSED",
+                                     "title":  "Lab6-UF-01, registration error on 17 Nov",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/54"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-21T09:26:57Z",
+                                     "createdAt":  "2026-11-20T07:05:52Z",
+                                     "number":  53,
+                                     "state":  "CLOSED",
+                                     "title":  "Lab6-Report (PDF)",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/53"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-21T06:08:23Z",
+                                     "createdAt":  "2026-11-20T07:04:44Z",
+                                     "number":  52,
+                                     "state":  "CLOSED",
+                                     "title":  "Lab6-Partner re-test and acceptance decision",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/52"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-20T07:39:34Z",
+                                     "createdAt":  "2026-11-20T07:04:18Z",
+                                     "number":  51,
+                                     "state":  "CLOSED",
+                                     "title":  "Lab6-Reply to partner review",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/51"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-21T08:53:26Z",
+                                     "createdAt":  "2026-11-20T07:03:52Z",
+                                     "number":  50,
+                                     "state":  "CLOSED",
+                                     "title":  "Lab6-Patner controlled defect exercise",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/50"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-20T06:59:06Z",
+                                     "createdAt":  "2026-11-20T06:53:42Z",
+                                     "number":  47,
+                                     "state":  "CLOSED",
+                                     "title":  "Lab6-Partner UAT-01 to UAT-06",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/47"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-20T06:58:46Z",
+                                     "createdAt":  "2026-11-20T06:52:04Z",
+                                     "number":  46,
+                                     "state":  "CLOSED",
+                                     "title":  "Lab6-UAT handoff for the partner team",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/46"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-16T10:42:11Z",
+                                     "createdAt":  "2026-11-12T04:31:47Z",
+                                     "number":  27,
+                                     "state":  "CLOSED",
+                                     "title":  "Finish deployment.md and the  PDF",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/27"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-14T08:36:29Z",
+                                     "createdAt":  "2026-11-12T04:31:39Z",
+                                     "number":  26,
+                                     "state":  "CLOSED",
+                                     "title":  "Check persistence. Recommended:  roll back and roll forward",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/26"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-14T07:28:11Z",
+                                     "createdAt":  "2026-11-12T04:31:28Z",
+                                     "number":  25,
+                                     "state":  "CLOSED",
+                                     "title":  "Add the deploy workflow; release a  visible change through staging into  main",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/25"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-13T09:11:15Z",
+                                     "createdAt":  "2026-11-12T04:31:20Z",
+                                     "number":  24,
+                                     "state":  "CLOSED",
+                                     "title":  "Connect GitHub to GCP and set the  merge gate",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/24"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-13T07:16:29Z",
+                                     "createdAt":  "2026-11-12T04:31:09Z",
+                                     "number":  23,
+                                     "state":  "CLOSED",
+                                     "title":  "Deploy to GCP for the first time",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/23"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-13T04:43:17Z",
+                                     "createdAt":  "2026-11-12T04:31:02Z",
+                                     "number":  22,
+                                     "state":  "CLOSED",
+                                     "title":  "Add CI on Pull Requests",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/22"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-13T04:29:05Z",
+                                     "createdAt":  "2026-11-12T04:30:54Z",
+                                     "number":  21,
+                                     "state":  "CLOSED",
+                                     "title":  "Containerize the app.",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/21"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-12T16:28:27Z",
+                                     "createdAt":  "2026-11-12T04:30:46Z",
+                                     "number":  20,
+                                     "state":  "CLOSED",
+                                     "title":  "Make the app cloud-ready and  write the first deployment.md.",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/20"
+                                 },
+                                 {
+                                     "closedAt":  "2026-11-12T04:30:58Z",
+                                     "createdAt":  "2026-11-12T04:30:35Z",
+                                     "number":  19,
+                                     "state":  "CLOSED",
+                                     "title":  "Start the GCP Free Trial",
+                                     "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/19"
+                                 }
+                             ],
+    "relevantIssues":  [
+                           {
+                               "closedAt":  null,
+                               "createdAt":  "2026-11-23T06:15:02Z",
+                               "number":  66,
+                               "state":  "OPEN",
+                               "title":  "LAB7-report",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/66"
+                           },
+                           {
+                               "closedAt":  "2026-11-24T10:19:36Z",
+                               "createdAt":  "2026-11-23T06:14:39Z",
+                               "number":  65,
+                               "state":  "CLOSED",
+                               "title":  "LAB7-Release v1.1.0",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/65"
+                           },
+                           {
+                               "closedAt":  "2026-11-24T10:07:40Z",
+                               "createdAt":  "2026-11-23T06:14:20Z",
+                               "number":  64,
+                               "state":  "CLOSED",
+                               "title":  "LAB7-Implementation",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/64"
+                           },
+                           {
+                               "closedAt":  "2026-11-24T09:13:18Z",
+                               "createdAt":  "2026-11-23T06:14:03Z",
+                               "number":  63,
+                               "state":  "CLOSED",
+                               "title":  "LAB7-Contract revision",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/63"
+                           },
+                           {
+                               "closedAt":  null,
+                               "createdAt":  "2026-11-23T06:13:30Z",
+                               "number":  62,
+                               "state":  "OPEN",
+                               "title":  "LAB7-CR",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/62"
+                           },
+                           {
+                               "closedAt":  "2026-11-21T04:43:16Z",
+                               "createdAt":  "2026-11-21T04:43:08Z",
+                               "number":  59,
+                               "state":  "CLOSED",
+                               "title":  "Lab6-Partner test the controlled defect",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/59"
+                           },
+                           {
+                               "closedAt":  null,
+                               "createdAt":  "2026-11-20T07:14:16Z",
+                               "number":  56,
+                               "state":  "OPEN",
+                               "title":  "Sprint2-UF-03, category balances show 0",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/56"
+                           },
+                           {
+                               "closedAt":  "2026-11-20T07:39:03Z",
+                               "createdAt":  "2026-11-20T07:14:05Z",
+                               "number":  55,
+                               "state":  "CLOSED",
+                               "title":  "Lab6-UF-02, stale bank balance",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/55"
+                           },
+                           {
+                               "closedAt":  "2026-11-20T07:14:23Z",
+                               "createdAt":  "2026-11-20T07:13:53Z",
+                               "number":  54,
+                               "state":  "CLOSED",
+                               "title":  "Lab6-UF-01, registration error on 17 Nov",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/54"
+                           },
+                           {
+                               "closedAt":  "2026-11-21T09:26:57Z",
+                               "createdAt":  "2026-11-20T07:05:52Z",
+                               "number":  53,
+                               "state":  "CLOSED",
+                               "title":  "Lab6-Report (PDF)",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/53"
+                           },
+                           {
+                               "closedAt":  "2026-11-21T06:08:23Z",
+                               "createdAt":  "2026-11-20T07:04:44Z",
+                               "number":  52,
+                               "state":  "CLOSED",
+                               "title":  "Lab6-Partner re-test and acceptance decision",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/52"
+                           },
+                           {
+                               "closedAt":  "2026-11-20T07:39:34Z",
+                               "createdAt":  "2026-11-20T07:04:18Z",
+                               "number":  51,
+                               "state":  "CLOSED",
+                               "title":  "Lab6-Reply to partner review",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/51"
+                           },
+                           {
+                               "closedAt":  "2026-11-21T08:53:26Z",
+                               "createdAt":  "2026-11-20T07:03:52Z",
+                               "number":  50,
+                               "state":  "CLOSED",
+                               "title":  "Lab6-Patner controlled defect exercise",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/50"
+                           },
+                           {
+                               "closedAt":  "2026-11-20T06:59:06Z",
+                               "createdAt":  "2026-11-20T06:53:42Z",
+                               "number":  47,
+                               "state":  "CLOSED",
+                               "title":  "Lab6-Partner UAT-01 to UAT-06",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/47"
+                           },
+                           {
+                               "closedAt":  "2026-11-20T06:58:46Z",
+                               "createdAt":  "2026-11-20T06:52:04Z",
+                               "number":  46,
+                               "state":  "CLOSED",
+                               "title":  "Lab6-UAT handoff for the partner team",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/46"
+                           },
+                           {
+                               "closedAt":  "2026-11-16T10:42:11Z",
+                               "createdAt":  "2026-11-12T04:31:47Z",
+                               "number":  27,
+                               "state":  "CLOSED",
+                               "title":  "Finish deployment.md and the  PDF",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/27"
+                           },
+                           {
+                               "closedAt":  "2026-11-14T08:36:29Z",
+                               "createdAt":  "2026-11-12T04:31:39Z",
+                               "number":  26,
+                               "state":  "CLOSED",
+                               "title":  "Check persistence. Recommended:  roll back and roll forward",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/26"
+                           },
+                           {
+                               "closedAt":  "2026-11-14T07:28:11Z",
+                               "createdAt":  "2026-11-12T04:31:28Z",
+                               "number":  25,
+                               "state":  "CLOSED",
+                               "title":  "Add the deploy workflow; release a  visible change through staging into  main",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/25"
+                           },
+                           {
+                               "closedAt":  "2026-11-13T09:11:15Z",
+                               "createdAt":  "2026-11-12T04:31:20Z",
+                               "number":  24,
+                               "state":  "CLOSED",
+                               "title":  "Connect GitHub to GCP and set the  merge gate",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/24"
+                           },
+                           {
+                               "closedAt":  "2026-11-13T07:16:29Z",
+                               "createdAt":  "2026-11-12T04:31:09Z",
+                               "number":  23,
+                               "state":  "CLOSED",
+                               "title":  "Deploy to GCP for the first time",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/23"
+                           },
+                           {
+                               "closedAt":  "2026-11-13T04:43:17Z",
+                               "createdAt":  "2026-11-12T04:31:02Z",
+                               "number":  22,
+                               "state":  "CLOSED",
+                               "title":  "Add CI on Pull Requests",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/22"
+                           },
+                           {
+                               "closedAt":  "2026-11-13T04:29:05Z",
+                               "createdAt":  "2026-11-12T04:30:54Z",
+                               "number":  21,
+                               "state":  "CLOSED",
+                               "title":  "Containerize the app.",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/21"
+                           },
+                           {
+                               "closedAt":  "2026-11-12T16:28:27Z",
+                               "createdAt":  "2026-11-12T04:30:46Z",
+                               "number":  20,
+                               "state":  "CLOSED",
+                               "title":  "Make the app cloud-ready and  write the first deployment.md.",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/20"
+                           },
+                           {
+                               "closedAt":  "2026-11-12T04:30:58Z",
+                               "createdAt":  "2026-11-12T04:30:35Z",
+                               "number":  19,
+                               "state":  "CLOSED",
+                               "title":  "Start the GCP Free Trial",
+                               "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/issues/19"
+                           }
+                       ],
+    "mergedPullRequestsInWindow":  [
+                                       {
+                                           "baseRefName":  "main",
+                                           "createdAt":  "2026-11-24T10:11:54Z",
+                                           "headRefName":  "lab7-staging",
+                                           "mergedAt":  "2026-11-24T10:17:47Z",
+                                           "number":  69,
+                                           "state":  "MERGED",
+                                           "title":  "Release: Lab 7 BR-12 no-overdraft repayment (v1.1.0)",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/69"
+                                       },
+                                       {
+                                           "baseRefName":  "lab7-staging",
+                                           "createdAt":  "2026-11-24T09:27:55Z",
+                                           "headRefName":  "LAB7-64-change/no-overdraft-repayment",
+                                           "mergedAt":  "2026-11-24T09:58:31Z",
+                                           "number":  68,
+                                           "state":  "MERGED",
+                                           "title":  "LAB7: Implement BR-12 no-overdraft repayment (RED → GREEN)",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/68"
+                                       },
+                                       {
+                                           "baseRefName":  "lab7-staging",
+                                           "createdAt":  "2026-11-24T09:01:45Z",
+                                           "headRefName":  "LAB7-63-docs/br12-contract",
+                                           "mergedAt":  "2026-11-24T09:08:53Z",
+                                           "number":  67,
+                                           "state":  "MERGED",
+                                           "title":  "LAB7: Revise SRS/F-06 contract for BR-12 (AC-37–40, TEST-28–32)",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/67"
+                                       },
+                                       {
+                                           "baseRefName":  "main",
+                                           "createdAt":  "2026-11-21T09:24:05Z",
+                                           "headRefName":  "lab6-staging",
+                                           "mergedAt":  "2026-11-21T09:26:56Z",
+                                           "number":  61,
+                                           "state":  "MERGED",
+                                           "title":  "Lab6 document with partner",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/61"
+                                       },
+                                       {
+                                           "baseRefName":  "lab6-staging",
+                                           "createdAt":  "2026-11-21T09:14:27Z",
+                                           "headRefName":  "LAB6-docs/lab6-report",
+                                           "mergedAt":  "2026-11-21T09:23:20Z",
+                                           "number":  60,
+                                           "state":  "MERGED",
+                                           "title":  "docs(lab6): add Lab 6 UAT records and move Lab 5 deployment doc",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/60"
+                                       },
+                                       {
+                                           "baseRefName":  "main",
+                                           "createdAt":  "2026-11-20T07:37:22Z",
+                                           "headRefName":  "lab6-staging",
+                                           "mergedAt":  "2026-11-20T07:39:01Z",
+                                           "number":  58,
+                                           "state":  "MERGED",
+                                           "title":  "Release: Lab 6 fix for #55 (UF-02)",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/58"
+                                       },
+                                       {
+                                           "baseRefName":  "lab6-staging",
+                                           "createdAt":  "2026-11-20T07:34:58Z",
+                                           "headRefName":  "LAB6-55-fix/opening-balance-refresh",
+                                           "mergedAt":  "2026-11-20T07:36:34Z",
+                                           "number":  57,
+                                           "state":  "MERGED",
+                                           "title":  "Lab6 55 fix/opening balance refresh",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/57"
+                                       },
+                                       {
+                                           "baseRefName":  "main",
+                                           "createdAt":  "2026-11-15T08:55:38Z",
+                                           "headRefName":  "lab5-staging",
+                                           "mergedAt":  "2026-11-15T08:57:21Z",
+                                           "number":  45,
+                                           "state":  "MERGED",
+                                           "title":  "Lab5 staging in to main",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/45"
+                                       },
+                                       {
+                                           "baseRefName":  "lab5-staging",
+                                           "createdAt":  "2026-11-15T08:53:37Z",
+                                           "headRefName":  "LAB5-10-fix/sh-line-endings",
+                                           "mergedAt":  "2026-11-15T08:54:58Z",
+                                           "number":  44,
+                                           "state":  "MERGED",
+                                           "title":  "fix: force LF line endings for shell scripts (#N)",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/44"
+                                       },
+                                       {
+                                           "baseRefName":  "main",
+                                           "createdAt":  "2026-11-15T07:15:05Z",
+                                           "headRefName":  "lab5-staging",
+                                           "mergedAt":  "2026-11-15T07:17:07Z",
+                                           "number":  43,
+                                           "state":  "MERGED",
+                                           "title":  "Lab5 staging into main",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/43"
+                                       },
+                                       {
+                                           "baseRefName":  "lab5-staging",
+                                           "createdAt":  "2026-11-15T07:12:35Z",
+                                           "headRefName":  "LAB5-9-deployment-doc",
+                                           "mergedAt":  "2026-11-15T07:14:24Z",
+                                           "number":  42,
+                                           "state":  "MERGED",
+                                           "title":  "Add Lab 5 deployment documentation (#27)",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/42"
+                                       },
+                                       {
+                                           "baseRefName":  "main",
+                                           "createdAt":  "2026-11-14T08:33:01Z",
+                                           "headRefName":  "lab5-staging",
+                                           "mergedAt":  "2026-11-14T08:36:28Z",
+                                           "number":  40,
+                                           "state":  "MERGED",
+                                           "title":  "Release: Session persistence after reload",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/40"
+                                       },
+                                       {
+                                           "baseRefName":  "lab5-staging",
+                                           "createdAt":  "2026-11-14T08:22:46Z",
+                                           "headRefName":  "LAB5-8-persistence-and-rollback",
+                                           "mergedAt":  "2026-11-14T08:30:29Z",
+                                           "number":  39,
+                                           "state":  "MERGED",
+                                           "title":  "Keep signed-in users signed in after reload",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/39"
+                                       },
+                                       {
+                                           "baseRefName":  "main",
+                                           "createdAt":  "2026-11-14T07:26:18Z",
+                                           "headRefName":  "lab5-staging",
+                                           "mergedAt":  "2026-11-14T07:28:09Z",
+                                           "number":  38,
+                                           "state":  "MERGED",
+                                           "title":  "Lab5 staging into main (small visible change)",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/38"
+                                       },
+                                       {
+                                           "baseRefName":  "lab5-staging",
+                                           "createdAt":  "2026-11-14T07:23:43Z",
+                                           "headRefName":  "LAB5-7-deploy-proof",
+                                           "mergedAt":  "2026-11-14T07:25:29Z",
+                                           "number":  37,
+                                           "state":  "MERGED",
+                                           "title":  "Add visible deployment proof marker",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/37"
+                                       },
+                                       {
+                                           "baseRefName":  "main",
+                                           "createdAt":  "2026-11-14T06:55:39Z",
+                                           "headRefName":  "lab5-staging",
+                                           "mergedAt":  "2026-11-14T06:59:22Z",
+                                           "number":  36,
+                                           "state":  "MERGED",
+                                           "title":  "Lab5 staging into main (7.4)",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/36"
+                                       },
+                                       {
+                                           "baseRefName":  "lab5-staging",
+                                           "createdAt":  "2026-11-14T06:51:12Z",
+                                           "headRefName":  "LAB5-7-auto-deploy",
+                                           "mergedAt":  "2026-11-14T06:53:25Z",
+                                           "number":  35,
+                                           "state":  "MERGED",
+                                           "title":  "Part of #7 Adapt deployment workflow to PMELS",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/35"
+                                       },
+                                       {
+                                           "baseRefName":  "main",
+                                           "createdAt":  "2026-11-13T05:54:16Z",
+                                           "headRefName":  "lab5-staging",
+                                           "mergedAt":  "2026-11-13T05:56:24Z",
+                                           "number":  33,
+                                           "state":  "MERGED",
+                                           "title":  "Lab5 staging",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/33"
+                                       },
+                                       {
+                                           "baseRefName":  "lab5-staging",
+                                           "createdAt":  "2026-11-13T05:45:42Z",
+                                           "headRefName":  "LAB5-5-deploy-config",
+                                           "mergedAt":  "2026-11-13T05:52:53Z",
+                                           "number":  32,
+                                           "state":  "MERGED",
+                                           "title":  "Lab5 5 deploy config",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/32"
+                                       },
+                                       {
+                                           "baseRefName":  "main",
+                                           "createdAt":  "2026-11-13T04:39:02Z",
+                                           "headRefName":  "lab5-staging",
+                                           "mergedAt":  "2026-11-13T04:43:28Z",
+                                           "number":  31,
+                                           "state":  "MERGED",
+                                           "title":  "Release: CI and Docker files",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/31"
+                                       },
+                                       {
+                                           "baseRefName":  "lab5-staging",
+                                           "createdAt":  "2026-11-13T04:13:46Z",
+                                           "headRefName":  "LAB5-4-ci-pr-checks",
+                                           "mergedAt":  "2026-11-13T04:36:14Z",
+                                           "number":  30,
+                                           "state":  "MERGED",
+                                           "title":  "CI and Docker PR checks (#4)",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/30"
+                                       },
+                                       {
+                                           "baseRefName":  "lab5-staging",
+                                           "createdAt":  "2026-11-12T16:27:52Z",
+                                           "headRefName":  "LAB5-3-docker",
+                                           "mergedAt":  "2026-11-12T16:43:11Z",
+                                           "number":  29,
+                                           "state":  "MERGED",
+                                           "title":  "Add Lab 5 Docker deployment workflow",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/29"
+                                       },
+                                       {
+                                           "baseRefName":  "sprint1-staging",
+                                           "createdAt":  "2026-11-12T06:22:56Z",
+                                           "headRefName":  "LAB5-2-cloud-ready",
+                                           "mergedAt":  "2026-11-12T09:26:54Z",
+                                           "number":  28,
+                                           "state":  "MERGED",
+                                           "title":  "Prepare the app for the cloud (#2)",
+                                           "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/pull/28"
+                                       }
+                                   ],
+    "actionRunsInWindow":  [
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-24T10:17:51Z",
+                                   "databaseId":  45373425293,
+                                   "headBranch":  "main",
+                                   "headSha":  "8d0d4b18a1c564a05f857fe3d8e34505bcbb1a81",
+                                   "name":  "Deploy demo",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/45373425293",
+                                   "workflowName":  "Deploy demo"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-24T10:11:58Z",
+                                   "databaseId":  45372462240,
+                                   "headBranch":  "lab7-staging",
+                                   "headSha":  "0664541a91e91368dd3cebe9068fa96e758d93fb",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/45372462240",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-24T09:32:52Z",
+                                   "databaseId":  45366231749,
+                                   "headBranch":  "LAB7-64-change/no-overdraft-repayment",
+                                   "headSha":  "f0555b3c261199d86a74fbe3775fcdf717febf7a",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/45366231749",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-24T09:28:01Z",
+                                   "databaseId":  45365453696,
+                                   "headBranch":  "LAB7-64-change/no-overdraft-repayment",
+                                   "headSha":  "c025078cac848898fc613c04057fdc25c84a8a31",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/45365453696",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-24T09:01:50Z",
+                                   "databaseId":  45361310360,
+                                   "headBranch":  "LAB7-63-docs/br12-contract",
+                                   "headSha":  "cc66a625cc10d5c3dc9a942ae2a2ec646af8da07",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/45361310360",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-21T09:26:59Z",
+                                   "databaseId":  44889632411,
+                                   "headBranch":  "main",
+                                   "headSha":  "7c68c84d57f920c3218d2ca7c8bcb096c3e2c3b8",
+                                   "name":  "Deploy demo",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/44889632411",
+                                   "workflowName":  "Deploy demo"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-21T09:24:24Z",
+                                   "databaseId":  44889432474,
+                                   "headBranch":  "lab6-staging",
+                                   "headSha":  "bd22cbd30dea824f3139a65ad2586147a3ebf6c7",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/44889432474",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "cancelled",
+                                   "createdAt":  "2026-11-21T09:24:10Z",
+                                   "databaseId":  44889413912,
+                                   "headBranch":  "lab6-staging",
+                                   "headSha":  "cb757a2d1828b0e65de6b1f3767ff58ff62d5eca",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/44889413912",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-21T09:14:31Z",
+                                   "databaseId":  44888633239,
+                                   "headBranch":  "LAB6-docs/lab6-report",
+                                   "headSha":  "e972f9480d9bccc82c308eb0fe0064d13ab2402e",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/44888633239",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-20T07:39:04Z",
+                                   "databaseId":  44696527606,
+                                   "headBranch":  "main",
+                                   "headSha":  "83371f70a93856e349b84a124ff4712022783ee8",
+                                   "name":  "Deploy demo",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/44696527606",
+                                   "workflowName":  "Deploy demo"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-20T07:37:27Z",
+                                   "databaseId":  44696334509,
+                                   "headBranch":  "lab6-staging",
+                                   "headSha":  "378690445cf237b34ab9bc0c88726bb55777dc25",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/44696334509",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-20T07:35:04Z",
+                                   "databaseId":  44696033917,
+                                   "headBranch":  "LAB6-55-fix/opening-balance-refresh",
+                                   "headSha":  "e88988ca8aa3aa7ead08198ff125d114ca6e4446",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/44696033917",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-15T08:57:24Z",
+                                   "databaseId":  43696888438,
+                                   "headBranch":  "main",
+                                   "headSha":  "d5cbb13b7da0d81aa91902aa0810a6bf6f59dfad",
+                                   "name":  "Deploy demo",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43696888438",
+                                   "workflowName":  "Deploy demo"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-15T08:55:52Z",
+                                   "databaseId":  43696778154,
+                                   "headBranch":  "lab5-staging",
+                                   "headSha":  "70da4e0299274af380d0de0b1d3b3bdd0fdd9d97",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43696778154",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "cancelled",
+                                   "createdAt":  "2026-11-15T08:55:42Z",
+                                   "databaseId":  43696765877,
+                                   "headBranch":  "lab5-staging",
+                                   "headSha":  "fb777992e380106a5256dcccbe033313837ec9f9",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43696765877",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-15T08:53:41Z",
+                                   "databaseId":  43696614006,
+                                   "headBranch":  "LAB5-10-fix/sh-line-endings",
+                                   "headSha":  "479c67eb29fc559cdc91bf4ef8a17ce46c3c84fa",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43696614006",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-15T07:17:10Z",
+                                   "databaseId":  43689261211,
+                                   "headBranch":  "main",
+                                   "headSha":  "24bf9eaf8827f590d4929f330e9d83e049c902cf",
+                                   "name":  "Deploy demo",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43689261211",
+                                   "workflowName":  "Deploy demo"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-15T07:15:26Z",
+                                   "databaseId":  43689134040,
+                                   "headBranch":  "lab5-staging",
+                                   "headSha":  "f57700a083d88e6b163d2569bfa108dd3b12e95c",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43689134040",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "cancelled",
+                                   "createdAt":  "2026-11-15T07:15:10Z",
+                                   "databaseId":  43689112565,
+                                   "headBranch":  "lab5-staging",
+                                   "headSha":  "44450423d538ff4658c04c14e3106d720f3be2e7",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43689112565",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-15T07:12:39Z",
+                                   "databaseId":  43688915163,
+                                   "headBranch":  "LAB5-9-deployment-doc",
+                                   "headSha":  "e72e5617b5e62f666475a31d4c12618cec1635ae",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43688915163",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-15T07:12:14Z",
+                                   "databaseId":  43688882158,
+                                   "headBranch":  "LAB5-9-deployment-doc",
+                                   "headSha":  "e72e5617b5e62f666475a31d4c12618cec1635ae",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43688882158",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-14T08:36:30Z",
+                                   "databaseId":  43576628863,
+                                   "headBranch":  "main",
+                                   "headSha":  "e304b9d7468fc46ca116e89ca1cfdc42a3ad7a28",
+                                   "name":  "Deploy demo",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43576628863",
+                                   "workflowName":  "Deploy demo"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-14T08:34:17Z",
+                                   "databaseId":  43576450388,
+                                   "headBranch":  "lab5-staging",
+                                   "headSha":  "f0b5fa90493250036ffe42634d2793665bd6cd78",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43576450388",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-14T08:33:04Z",
+                                   "databaseId":  43576352258,
+                                   "headBranch":  "lab5-staging",
+                                   "headSha":  "dbd1d3139e1ea368e759b693a5aa3c8e07fe52f9",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43576352258",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-14T08:28:09Z",
+                                   "databaseId":  43575966713,
+                                   "headBranch":  "LAB5-8-persistence-and-rollback",
+                                   "headSha":  "70e78c40103842b3822dc3b445365b4bfb9fb30a",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43575966713",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "failure",
+                                   "createdAt":  "2026-11-14T08:22:49Z",
+                                   "databaseId":  43575550433,
+                                   "headBranch":  "LAB5-8-persistence-and-rollback",
+                                   "headSha":  "48e7bcd2b1012594e8c696297565cb0c9eeccdf3",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43575550433",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-14T07:28:12Z",
+                                   "databaseId":  43571233426,
+                                   "headBranch":  "main",
+                                   "headSha":  "0487c99296a3f30e2416220f2d861dda3242167b",
+                                   "name":  "Deploy demo",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43571233426",
+                                   "workflowName":  "Deploy demo"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-14T07:26:31Z",
+                                   "databaseId":  43571112580,
+                                   "headBranch":  "lab5-staging",
+                                   "headSha":  "b555a019af8386496bf7cf8e8275bec24cc6e3c1",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43571112580",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "cancelled",
+                                   "createdAt":  "2026-11-14T07:26:22Z",
+                                   "databaseId":  43571102048,
+                                   "headBranch":  "lab5-staging",
+                                   "headSha":  "c8f482a7018cefbc540478a3946911dac0aaf1d0",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43571102048",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-14T07:23:47Z",
+                                   "databaseId":  43570902731,
+                                   "headBranch":  "LAB5-7-deploy-proof",
+                                   "headSha":  "3e2e06874a7780090c588ad6786be4aaa09ee2a9",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43570902731",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-14T06:59:24Z",
+                                   "databaseId":  43568938545,
+                                   "headBranch":  "main",
+                                   "headSha":  "ddb0b21e57b190333227cf926ad3dc3a4282d16a",
+                                   "name":  "Deploy demo",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43568938545",
+                                   "workflowName":  "Deploy demo"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-14T06:57:56Z",
+                                   "databaseId":  43568835361,
+                                   "headBranch":  "lab5-staging",
+                                   "headSha":  "c0a72336b09b3244a3bc610149bfdf1555da794b",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43568835361",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-14T06:55:43Z",
+                                   "databaseId":  43568672807,
+                                   "headBranch":  "lab5-staging",
+                                   "headSha":  "f0a97f4e90fd2072c450b9a33395ac61f22feab4",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43568672807",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-14T06:51:16Z",
+                                   "databaseId":  43568337420,
+                                   "headBranch":  "LAB5-7-auto-deploy",
+                                   "headSha":  "e52889baccc3743d8ec3c3e0abfed7ddd2ad781e",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43568337420",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "failure",
+                                   "createdAt":  "2026-11-13T09:07:01Z",
+                                   "databaseId":  43398621906,
+                                   "headBranch":  "LAB5-6-test/prove-gate-health",
+                                   "headSha":  "672359c92117e46425cfc46ddf919da18bb8a0a1",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43398621906",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-13T08:58:05Z",
+                                   "databaseId":  43397389972,
+                                   "headBranch":  "LAB5-6-test/prove-gate-health",
+                                   "headSha":  "bcc372979a6f69dbf6dcc5ba789e2a87db202d20",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43397389972",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-13T05:54:20Z",
+                                   "databaseId":  43375050416,
+                                   "headBranch":  "lab5-staging",
+                                   "headSha":  "49f7e2cdc3464e84259786ce5cfe573d60531766",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43375050416",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-13T05:45:46Z",
+                                   "databaseId":  43374128164,
+                                   "headBranch":  "LAB5-5-deploy-config",
+                                   "headSha":  "e9a9acde03f35af538518a666828709f298a6d9b",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43374128164",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-13T04:39:05Z",
+                                   "databaseId":  43366896558,
+                                   "headBranch":  "lab5-staging",
+                                   "headSha":  "ad614a178c64a7b0abdab070be3c51bfe7377670",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43366896558",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "success",
+                                   "createdAt":  "2026-11-13T04:21:36Z",
+                                   "databaseId":  43365000213,
+                                   "headBranch":  "LAB5-4-ci-pr-checks",
+                                   "headSha":  "73c761af0cefa30edefcc4c03be80baf9888e2ea",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43365000213",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               },
+                               {
+                                   "conclusion":  "failure",
+                                   "createdAt":  "2026-11-13T04:13:52Z",
+                                   "databaseId":  43364141211,
+                                   "headBranch":  "LAB5-4-ci-pr-checks",
+                                   "headSha":  "87227da63d2a77a35b8594eec8e9f761ed833158",
+                                   "name":  "CI \u0026 Docker Build",
+                                   "status":  "completed",
+                                   "url":  "https://github.com/Tana4Work/Personal_Money_and_Expense_Logging_System/actions/runs/43364141211",
+                                   "workflowName":  "CI \u0026 Docker Build"
+                               }
+                           ]
+}
