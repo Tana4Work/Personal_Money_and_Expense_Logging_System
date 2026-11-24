@@ -15,6 +15,7 @@ let diningAccountId: number;
 let groceriesAccountId: number;
 let otherBankAccountId: number;
 let otherCardAccountId: number;
+let userId: number;
 
 async function cleanupFixture() {
   const existingUsers = await prisma.user.findMany({ where: { email: { in: Object.values(emails) } }, select: { id: true } });
@@ -29,6 +30,7 @@ beforeAll(async () => {
   await cleanupFixture();
   const passwordHash = await hashPassword(password);
   const user = await prisma.user.create({ data: { name: "F06 User", email: emails.user, passwordHash, role: UserRole.USER } });
+  userId = user.id;
   const otherUser = await prisma.user.create({ data: { name: "F06 Other User", email: emails.otherUser, passwordHash, role: UserRole.USER } });
   await prisma.user.create({ data: { name: "F06 Administrator", email: emails.admin, passwordHash, role: UserRole.ADMINISTRATOR } });
   bankAccountId = (await prisma.account.create({ data: { ownerUserId: user.id, name: "Bank Account", type: AccountType.CASH, subtype: AccountSubtype.BANK } })).id;
@@ -48,6 +50,37 @@ afterAll(async () => {
 async function login(email: string) {
   const response = await request(app).post("/api/auth/login").send({ email, password }).expect(200);
   return response.body.token as string;
+}
+
+async function prepareRepaymentScenario(openingBalance: string, cardDebt: string) {
+  await prisma.transaction.deleteMany({ where: { ownerUserId: userId } });
+  await prisma.account.update({
+    where: { id: bankAccountId },
+    data: { openingBalance, openingBalanceDate: new Date("2026-11-04T00:00:00.000Z") },
+  });
+  const token = await login(emails.user);
+  await request(app)
+    .post("/api/transactions/payment")
+    .set("Authorization", `Bearer ${token}`)
+    .send({
+      totalAmount: cardDebt,
+      date: "2026-11-04",
+      sourceAccountId: cardAccountId,
+      allocations: [{ accountId: diningAccountId, allocationType: "EXPENSE", amount: cardDebt }],
+    })
+    .expect(201);
+  return token;
+}
+
+async function getBalance(token: string, accountId: number) {
+  const response = await request(app).get("/api/summaries/balances").set("Authorization", `Bearer ${token}`).expect(200);
+  return response.body.accounts.find((account: { accountId: number }) => account.accountId === accountId)?.balance as string;
+}
+
+async function getUserTransactionCounts() {
+  const transactions = await prisma.transaction.findMany({ where: { ownerUserId: userId }, select: { id: true } });
+  const allocations = await prisma.allocationLine.count({ where: { transactionId: { in: transactions.map(({ id }) => id) } } });
+  return { transactions: transactions.length, allocations };
 }
 
 describe("F-06 credit-card repayment and overview", () => {
@@ -92,5 +125,62 @@ describe("F-06 credit-card repayment and overview", () => {
     const adminToken = await login(emails.admin);
     await request(app).post("/api/transactions/repayment").set("Authorization", `Bearer ${adminToken}`).send({ totalAmount: "2000", date: "2026-11-04", sourceAccountId: bankAccountId, receivingAccountId: cardAccountId }).expect(403);
     expect(await prisma.transaction.count()).toBe(before);
+  });
+
+  it("TEST-28 rejects repayment above the bank balance without writing or exposing a balance", async () => {
+    const token = await prepareRepaymentScenario("500", "600");
+    const countsBefore = await getUserTransactionCounts();
+    const balancesBefore = await request(app).get("/api/summaries/balances").set("Authorization", `Bearer ${token}`).expect(200);
+
+    const response = await request(app)
+      .post("/api/transactions/repayment")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ totalAmount: "500.01", date: "2026-11-04", sourceAccountId: bankAccountId, receivingAccountId: cardAccountId })
+      .expect(400);
+
+    expect(response.body).toEqual({ error: "Insufficient bank balance for this repayment." });
+    expect(await getUserTransactionCounts()).toEqual(countsBefore);
+    const balancesAfter = await request(app).get("/api/summaries/balances").set("Authorization", `Bearer ${token}`).expect(200);
+    expect(balancesAfter.body).toEqual(balancesBefore.body);
+  });
+
+  it("TEST-29 accepts repayment that leaves the bank balance at exactly zero", async () => {
+    const token = await prepareRepaymentScenario("500", "600");
+
+    await request(app)
+      .post("/api/transactions/repayment")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ totalAmount: "500", date: "2026-11-04", sourceAccountId: bankAccountId, receivingAccountId: cardAccountId })
+      .expect(201);
+
+    expect(await getBalance(token, bankAccountId)).toBe("0");
+  });
+
+  it("TEST-30 serializes competing repayments so the bank balance never becomes negative", async () => {
+    const token = await prepareRepaymentScenario("500", "600");
+
+    const responses = await Promise.all(["300", "300"].map((totalAmount) =>
+      request(app)
+        .post("/api/transactions/repayment")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ totalAmount, date: "2026-11-04", sourceAccountId: bankAccountId, receivingAccountId: cardAccountId }),
+    ));
+
+    expect(responses.map((response) => response.status).sort()).toEqual([201, 400]);
+    expect(await prisma.transaction.count({ where: { ownerUserId: userId } })).toBe(2);
+    expect(await getBalance(token, bankAccountId)).toBe("200");
+  });
+
+  it("TEST-32 continues to accept repayment above the credit-card debt", async () => {
+    const token = await prepareRepaymentScenario("1000", "100");
+
+    await request(app)
+      .post("/api/transactions/repayment")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ totalAmount: "300", date: "2026-11-04", sourceAccountId: bankAccountId, receivingAccountId: cardAccountId })
+      .expect(201);
+
+    expect(await getBalance(token, bankAccountId)).toBe("700");
+    expect(await getBalance(token, cardAccountId)).toBe("200");
   });
 });
