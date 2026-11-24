@@ -118,11 +118,11 @@ Before starting: commit or stash the pending Lab 6 doc changes (`git status` cur
 | Role | Tag / commit | Cloud Run revision |
 |---|---|---|
 | Accepted Sprint 1 baseline | `v1.0.1-uat` / `83371f7` (CPMS also accepted docs-only `7c68c84`) | `pmels-00009-rwp` |
-| Pre-change commit (`lab7-staging` tip before RED) | _fill in_ | — |
-| Contract commit (PR-A merge) | _fill in_ | — |
-| RED test commit | _fill in_ | — |
-| GREEN implementation commit | _fill in_ | — |
-| Accepted main release | `v1.1.0` / _fill in_ | _fill in_ |
+| Pre-change commit (`lab7-staging` tip before RED) | `8e54792` | — |
+| Contract commit (PR-A merge) | `971bb8a` (PR #67) | — |
+| RED test commit | `9690c27` | — |
+| GREEN implementation commit | `c025078` | — |
+| Accepted main release | `v1.1.0` / `8d0d4b18a1c564a05f857fe3d8e34505bcbb1a81` | `pmels-00011-rw4` |
 
 ## 8. Part C metrics
 
@@ -133,7 +133,8 @@ Sources: `gh issue list`, `gh pr list`, `gh run list` exported to text and embed
 2. Merged PRs (IDs, merge dates, target branch).
 3. Automated test results: **reuse** the full-suite run on the `v1.1.0` commit (same as Part B).
 4. UAT defect status, Lab 6 window (10–22 Nov). "Resolved" = fix merged to `main` + partner re-test PASS.
-   UF-01..03 = not-defect; #55 = accepted → fixed → re-test PASS.
+   UF-01 / #54 = not-defect (operations incident); UF-02 / #55 = accepted minor defect → fixed → partner re-test PASS;
+   UF-03 / #56 = enhancement for Sprint 2, not a Sprint 1 defect.
 5. CI run outcomes (success/failure/cancelled, workflow + branch scope, run IDs).
 
 Interpretation is at most 100 words and names one concrete risk/action with an owner.
