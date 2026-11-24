@@ -88,6 +88,21 @@ const transactionInclude = {
   allocations: { orderBy: { id: "asc" as const }, select: { id: true, allocationType: true, amount: true, account: { select: { id: true, name: true, type: true, subtype: true } } } },
 };
 
+type BalanceQueryClient = Pick<Prisma.TransactionClient, "account" | "transaction">;
+
+async function calculateAccountBalances(prisma: BalanceQueryClient, ownerUserId: number) {
+  const accounts = await prisma.account.findMany({ where: { ownerUserId }, orderBy: [{ name: "asc" }, { id: "asc" }] });
+  const incoming = await prisma.transaction.groupBy({ by: ["receivingAccountId"], where: { ownerUserId, receivingAccountId: { not: null } }, _sum: { totalAmount: true } });
+  const outgoing = await prisma.transaction.groupBy({ by: ["sourceAccountId"], where: { ownerUserId, sourceAccountId: { not: null } }, _sum: { totalAmount: true } });
+  return accounts.map((account) => ({
+    accountId: account.id,
+    balance: new Prisma.Decimal(account.openingBalance)
+      .add(incoming.find((entry) => entry.receivingAccountId === account.id)?._sum.totalAmount ?? 0)
+      .sub(outgoing.find((entry) => entry.sourceAccountId === account.id)?._sum.totalAmount ?? 0)
+      .toString(),
+  }));
+}
+
 app.get("/api/health", (_req, res) => res.status(200).json({ status: "ok", service: "Personal Money API" }));
 
 app.get("/api/ready", async (_req, res) => {
@@ -341,18 +356,26 @@ app.post("/api/transactions/repayment", asyncRoute(async (req, res) => {
     res.status(400).json({ error: "Repayments must use a credit-card account." }); return;
   }
 
-  const transaction = await prisma.transaction.create({
-    data: {
-      ownerUserId: user.id,
-      formType: TransactionFormType.PAYMENT_OR_CHARGE,
-      sourceAccountId,
-      receivingAccountId,
-      totalAmount: amount,
-      transactionDate,
-      allocations: { create: [{ accountId: receivingAccountId, allocationType: AllocationType.REPAYMENT, amount }] },
-    },
-    include: transactionInclude,
+  const transaction = await prisma.$transaction(async (databaseTransaction) => {
+    await databaseTransaction.$queryRaw`SELECT "id" FROM "Account" WHERE "id" = ${sourceAccountId} FOR UPDATE`;
+    const currentBalance = (await calculateAccountBalances(databaseTransaction, user.id)).find((account) => account.accountId === sourceAccountId);
+    if (!currentBalance) throw new Error("Source account balance was not found.");
+    if (new Prisma.Decimal(currentBalance.balance).lessThan(amount)) return null;
+
+    return databaseTransaction.transaction.create({
+      data: {
+        ownerUserId: user.id,
+        formType: TransactionFormType.PAYMENT_OR_CHARGE,
+        sourceAccountId,
+        receivingAccountId,
+        totalAmount: amount,
+        transactionDate,
+        allocations: { create: [{ accountId: receivingAccountId, allocationType: AllocationType.REPAYMENT, amount }] },
+      },
+      include: transactionInclude,
+    });
   });
+  if (!transaction) { res.status(400).json({ error: "Insufficient bank balance for this repayment." }); return; }
   res.status(201).json(transactionResponse(transaction));
 }));
 
@@ -385,11 +408,7 @@ app.get("/api/summaries", asyncRoute(async (req, res) => {
 app.get("/api/summaries/balances", asyncRoute(async (req, res) => {
   const user = await requireUser(req, res);
   if (!user) return;
-  const prisma = getPrisma();
-  const accounts = await prisma.account.findMany({ where: { ownerUserId: user.id }, orderBy: [{ name: "asc" }, { id: "asc" }] });
-  const incoming = await prisma.transaction.groupBy({ by: ["receivingAccountId"], where: { ownerUserId: user.id, receivingAccountId: { not: null } }, _sum: { totalAmount: true } });
-  const outgoing = await prisma.transaction.groupBy({ by: ["sourceAccountId"], where: { ownerUserId: user.id, sourceAccountId: { not: null } }, _sum: { totalAmount: true } });
-  const balances = accounts.map((account) => ({ accountId: account.id, balance: new Prisma.Decimal(account.openingBalance).add(incoming.find((entry) => entry.receivingAccountId === account.id)?._sum.totalAmount ?? 0).sub(outgoing.find((entry) => entry.sourceAccountId === account.id)?._sum.totalAmount ?? 0).toString() }));
+  const balances = await calculateAccountBalances(getPrisma(), user.id);
   res.status(200).json({ accounts: balances });
 }));
 
