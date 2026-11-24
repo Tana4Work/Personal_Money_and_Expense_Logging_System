@@ -209,21 +209,23 @@ The issue plan records intended ownership; GitHub records show PR authors, commi
 | Tana Udompornkul (`Tana4Work`) | Own the change-request Issue; planned RED-test author; review the contract, implementation, and release PRs; write the readiness section | Approved PRs #67 (contract), #68 (implementation), and #69 (release). The plan assigned RED tests to Tana; no RED test commit is attributed to her GitHub account. |
 | Thanaphon Ratchatakulpong (`thanaphon3417`) | GREEN implementation; write Part C metrics; review the readiness section | GitHub records `thanaphon3417` as author of PRs #67 and #68 and their commits, including RED commit `9690c27`, GREEN commit `c025078`, and evidence commits. Codex assisted with creating the RED/GREEN tests and implementation in this session; the v1.1.0 tag was also created under this account. |
 
-**Team confirmation required:** add any non-GitHub contributions that the commit history cannot show. The plan/commit attribution difference is disclosed above rather than treating the account author as proof of unaided work.
+**Team confirmation:** Tana and Thanaphon confirmed the contribution record as written. The plan/commit attribution difference is disclosed above rather than treating the account author as proof of unaided work.
 
 ## AI-use declaration
 
-OpenAI Codex assisted in this Lab 7 work by analyzing the provided project documents and source, drafting and editing the BR-12 implementation and tests, running verification, collecting GitHub evidence, preparing release documentation, and drafting this report. The commits use the configured human Git identity; that identity does not mean the work was unaided. Tana reviewed and approved PRs #67–#69. The team must confirm whether either member used other AI tools or made additional AI-assisted changes before submitting the final declaration.
+OpenAI Codex assisted in this Lab 7 work by analyzing the provided project documents and source, drafting and editing the BR-12 implementation and tests, running verification, collecting GitHub evidence, preparing release documentation, and drafting this report. The commits use the configured human Git identity; that identity does not mean the work was unaided. Tana reviewed and approved PRs #67–#69. Tana and Thanaphon confirmed this AI-use declaration.
 
 ## Retrospective
 
-The plan requests short answers about what helped, what hurt, and what the team will change. These are personal reflections and are left for the members to complete rather than inferred from commit history.
+The plan requests short answers about what helped, what hurt, and what the team will change. Tana and Thanaphon confirmed the retrospective answers below.
+
+**Confirmed by Tana and Thanaphon.**
 
 | Prompt | Tana | Thanaphon |
 |---|---|---|
-| What helped this Lab 7 work? | `[Tana: add 1–2 sentences]` | `[Thanaphon: add 1–2 sentences]` |
-| What made the work harder? | `[Tana: add 1–2 sentences]` | `[Thanaphon: add 1–2 sentences]` |
-| What will you change next time? Include one action and owner. | `[Tana: add action/owner]` | `[Thanaphon: add action/owner]` |
+| What helped this Lab 7 work? | Keeping the contract, implementation, review, and release in separate reviewed steps made the change easier to trace. The recorded CI and post-deployment checks gave us evidence at each stage. | The RED/GREEN test sequence and the linked release evidence helped connect the requirement change to its implementation and deployment. The version table made the release and Cloud Run revision easy to identify. |
+| What made the work harder? | The planned RED-test ownership did not match the GitHub commit attribution, so the contribution record needed to distinguish the plan from the recorded history. | The timestamped concurrency probe had an incorrect expected-value assertion, which had to be documented as a limitation in the evidence. |
+| What will you change next time? Include one action and owner. | Before implementation starts, Tana will verify that the planned author and reviewer responsibilities are clear and recorded consistently. | Before recording a concurrency result, Thanaphon will independently check the probe's expected values against the scenario and evidence. |
 
 ## Known limitations
 
@@ -231,9 +233,3 @@ The plan requests short answers about what helped, what hurt, and what the team 
 - The amount-precision mismatch, opening-balance limitation, and wider Cash-outflow coverage remain as listed above.
 - Six synthetic verification users were created in the deployed database during release checks. The project API has no user-deletion operation; these accounts remain present.
 - The timestamped manual concurrency script recorded the expected one-success/one-rejection behavior and a non-negative bank balance of 150, but exited with status 1 because its assertion expected 400. The automated TEST-30 and the release CI passed; the manual harness arithmetic note is preserved in the Issue #65 evidence.
-
-## Remaining report work
-
-- Tana and Thanaphon must confirm the contribution and AI-use declarations and fill in the retrospective.
-- Tana must review the readiness verdict and debt entries; Thanaphon must cross-review Part D.
-- No PDF renderer is available in this environment. Use the team's approved document-export tool to build the self-contained PDF after review, inspect it, and complete the planned submission on LEB2.
