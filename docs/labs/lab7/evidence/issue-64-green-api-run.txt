@@ -1,0 +1,24 @@
+Command: npm.cmd test -- tests/f06-repayment-overview.api.test.ts --reporter=verbose
+Commit: c025078
+Phase: GREEN
+Started (Asia/Bangkok): 2026-11-24 16:31:29 +07:00
+
+
+> money-tracker-server@1.0.0 test
+> vitest run tests/f06-repayment-overview.api.test.ts --reporter=verbose
+
+
+ RUN  v2.1.9 D:/KMUTT/Year3/CPE334-Software_Engineering/Project/server
+
+ ✓ tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > completes and retrieves the full Sprint 1 journey with correct final values
+ ✓ tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > rejects invalid account combinations and cross-owner repayment without partial writes
+ ✓ tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > rejects unauthenticated and administrator repayment
+ ✓ tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > TEST-28 rejects repayment above the bank balance without writing or exposing a balance
+ ✓ tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > TEST-29 accepts repayment that leaves the bank balance at exactly zero
+ ✓ tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > TEST-30 serializes competing repayments so the bank balance never becomes negative 2197ms
+ ✓ tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > TEST-32 continues to accept repayment above the credit-card debt
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  16:31:31
+   Duration  6.48s (transform 105ms, setup 0ms, collect 295ms, tests 5.23s, environment 0ms, prepare 79ms)

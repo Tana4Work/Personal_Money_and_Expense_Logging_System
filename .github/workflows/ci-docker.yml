@@ -40,7 +40,7 @@ name: CI & Docker Build
 on:
   workflow_call:
   pull_request:
-    branches: [main, lab5-staging, lab6-staging]
+    branches: [main, lab5-staging, lab6-staging, lab7-staging]
   workflow_dispatch:
 
 # Least privilege: this workflow only needs to read the repository.

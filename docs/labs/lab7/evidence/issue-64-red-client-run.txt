@@ -1,0 +1,27 @@
+Command: npm.cmd test -- tests/App.test.tsx --reporter=verbose
+Commit: 9690c27
+Implementation: unchanged; RED phase
+Started (Asia/Bangkok): 2026-11-24 16:21:48 +07:00
+
+
+> money-tracker-client@1.0.0 test
+> vitest run tests/App.test.tsx --reporter=verbose
+
+
+ RUN  v2.1.9 D:/KMUTT/Year3/CPE334-Software_Engineering/Project/client
+
+ ✓ tests/App.test.tsx > authentication and account UI > logs in, saves an opening bank balance and date, and logs out 1280ms
+ ✓ tests/App.test.tsx > authentication and account UI > restores a valid session after the app reloads
+ ✓ tests/App.test.tsx > authentication and account UI > clears an invalid stored session and returns to sign in
+ ✓ tests/App.test.tsx > authentication and account UI > records received salary and refreshes financial history 1168ms
+ ✓ tests/App.test.tsx > authentication and account UI > records a split credit-card purchase and refreshes expense history 1278ms
+ ✓ tests/App.test.tsx > authentication and account UI > records a credit-card repayment and refreshes the overview 1085ms
+ ✓ tests/App.test.tsx > authentication and account UI > TEST-31 displays the server's insufficient-balance repayment message 1198ms
+ ✓ tests/App.test.tsx > authentication and account UI > shows administrator access controls without loading financial accounts 933ms
+ ✓ tests/App.test.tsx > authentication and account UI > registers a normal user and returns to sign in with a notification 891ms
+ ✓ tests/App.test.tsx > authentication and account UI > UF-02: refreshes the bank balance card and current balance after saving an opening balance
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  16:21:51
+   Duration  12.93s (transform 124ms, setup 91ms, collect 246ms, tests 8.16s, environment 479ms, prepare 86ms)

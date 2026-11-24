@@ -193,6 +193,35 @@ describe("authentication and account UI", () => {
     expect(screen.getAllByText("0").length).toBeGreaterThan(0);
   });
 
+  it("TEST-31 displays the server's insufficient-balance repayment message", async () => {
+    const accounts = [
+      { id: 1, name: "Bank Account", type: "CASH", subtype: "BANK", openingBalance: "500", openingBalanceDate: "2026-11-04T00:00:00.000Z", createdAt: "2026-11-03T00:00:00.000Z" },
+      { id: 2, name: "Credit Card", type: "LOAN_TAKEN", subtype: "CREDIT_CARD", openingBalance: "0", openingBalanceDate: null, createdAt: "2026-11-03T00:00:00.000Z" },
+    ];
+    const fetchMock = vi.fn()
+      .mockImplementationOnce(() => response({ token: "user-session", expiresAt: "2030-01-01T00:00:00.000Z", user: { id: 1, name: "Demo User", email: "demo.user@money.local", role: "USER" } }))
+      .mockImplementationOnce(() => response({ user: { id: 1, name: "Demo User", email: "demo.user@money.local", role: "USER" } }))
+      .mockImplementationOnce(() => response(accounts))
+      .mockImplementationOnce(() => response({ accounts: [{ accountId: 1, balance: "500" }, { accountId: 2, balance: "-600" }] }))
+      .mockImplementationOnce(() => response({ income: "0", expenses: "600" }))
+      .mockImplementationOnce(() => response([]))
+      .mockImplementationOnce(() => response({ error: "Insufficient bank balance for this repayment." }, 400));
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(screen.getByLabelText("Email address"), "demo.user@money.local");
+    await user.type(screen.getByLabelText("Password"), "A synthetic password");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.type(await screen.findByLabelText("Repayment amount"), "500.01");
+    fireEvent.change(screen.getByLabelText("Repayment date"), { target: { value: "2026-11-04" } });
+    await user.selectOptions(screen.getByLabelText("Bank source account"), "1");
+    await user.selectOptions(screen.getByLabelText("Credit-card destination"), "2");
+    await user.click(screen.getByRole("button", { name: "Record repayment" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Insufficient bank balance for this repayment.");
+    expect(fetchMock.mock.calls[6][0]).toBe("/api/transactions/repayment");
+  });
+
   it("shows administrator access controls without loading financial accounts", async () => {
     const fetchMock = vi.fn()
       .mockImplementationOnce(() => response({ token: "admin-session", expiresAt: "2030-01-01T00:00:00.000Z", user: { id: 2, name: "Demo Administrator", email: "demo.admin@money.local", role: "ADMINISTRATOR" } }))
