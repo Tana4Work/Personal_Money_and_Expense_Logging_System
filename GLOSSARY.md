@@ -56,6 +56,10 @@ A transaction form that deposits money into a cash or bank account and allocates
 
 A transaction that reduces a liability such as credit-card debt. A repayment is not income or expense.
 
+## Overdraft
+
+A Cash account balance below zero. BR-12 prohibits a Lab 7 repayment from creating an overdraft; a repayment that leaves the balance exactly zero is allowed. The rule's Lab 7 implementation scope is repayment only.
+
 ## Ownership
 
 The relationship between a User and that user's financial records. Backend authorization must use the authenticated identity to enforce ownership.
