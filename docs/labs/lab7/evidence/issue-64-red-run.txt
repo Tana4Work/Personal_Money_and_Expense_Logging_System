@@ -1,0 +1,68 @@
+Command: npm.cmd test -- tests/f06-repayment-overview.api.test.ts --reporter=verbose
+Commit: 9690c27
+Implementation: unchanged; RED phase
+Started (Asia/Bangkok): 2026-11-24 16:21:04 +07:00
+
+
+> money-tracker-server@1.0.0 test
+> vitest run tests/f06-repayment-overview.api.test.ts --reporter=verbose
+
+
+ RUN  v2.1.9 D:/KMUTT/Year3/CPE334-Software_Engineering/Project/server
+
+ ✓ tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > completes and retrieves the full Sprint 1 journey with correct final values
+ ✓ tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > rejects invalid account combinations and cross-owner repayment without partial writes
+ ✓ tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > rejects unauthenticated and administrator repayment
+ × tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > TEST-28 rejects repayment above the bank balance without writing or exposing a balance
+   → expected 400 "Bad Request", got 201 "Created"
+ ✓ tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > TEST-29 accepts repayment that leaves the bank balance at exactly zero
+ × tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > TEST-30 serializes competing repayments so the bank balance never becomes negative 2160ms
+   → expected [ 201, 201 ] to deeply equal [ 201, 400 ]
+ ✓ tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > TEST-32 continues to accept repayment above the credit-card debt
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+System.Management.Automation.RemoteException
+ FAIL  tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > TEST-28 rejects repayment above the bank balance without writing or exposing a balance
+Error: expected 400 "Bad Request", got 201 "Created"
+ ❯ tests/f06-repayment-overview.api.test.ts:139:8
+    137|       .set("Authorization", `Bearer ${token}`)
+    138|       .send({ totalAmount: "500.01", date: "2026-11-04", sourceAccount…
+    139|       .expect(400);
+       |        ^
+    140|
+    141|     expect(response.body).toEqual({ error: "Insufficient bank balance …
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+System.Management.Automation.RemoteException
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+System.Management.Automation.RemoteException
+ FAIL  tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > TEST-30 serializes competing repayments so the bank balance never becomes negative
+AssertionError: expected [ 201, 201 ] to deeply equal [ 201, 400 ]
+System.Management.Automation.RemoteException
+- Expected
++ Received
+System.Management.Automation.RemoteException
+  Array [
+    201,
+-   400,
++   201,
+  ]
+System.Management.Automation.RemoteException
+ ❯ tests/f06-repayment-overview.api.test.ts:169:65
+    167|     ));
+    168|
+    169|     expect(responses.map((response) => response.status).sort()).toEqua…
+       |                                                                 ^
+    170|     expect(await prisma.transaction.count({ where: { ownerUserId: user…
+    171|     expect(await getBalance(token, bankAccountId)).toBe("200");
+System.Management.Automation.RemoteException
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+System.Management.Automation.RemoteException
+ Test Files  1 failed (1)
+      Tests  2 failed | 5 passed (7)
+   Start at  16:21:07
+   Duration  6.23s (transform 92ms, setup 0ms, collect 279ms, tests 5.08s, environment 0ms, prepare 75ms)
