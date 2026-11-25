@@ -1,0 +1,296 @@
+
+> money-tracker-server@1.0.0 test
+> vitest run tests/f08-account-management.api.test.ts tests/f09-opening-balance-management.api.test.ts tests/f03-opening-balance.api.test.ts
+
+
+ RUN  v2.1.9 D:/KMUTT/Year3/CPE334-Software_Engineering/Project/server
+
+ ❯ tests/f08-account-management.api.test.ts (8 tests | 8 failed) 2896ms
+   × F-08 account management > TEST-33 creates all five account types with zero balances 118ms
+     → expected 201 "Created", got 404 "Not Found"
+   × F-08 account management > TEST-34 rejects invalid types, subtype pairs, and names without writing 75ms
+     → expected 400 "Bad Request", got 404 "Not Found"
+   × F-08 account management > TEST-35 enforces case-insensitive names per owner 124ms
+     → expected 201 "Created", got 404 "Not Found"
+   × F-08 account management > TEST-36 renames an account but rejects type or subtype changes 69ms
+     → expected 200 "OK", got 404 "Not Found"
+   × F-08 account management > TEST-37 archives, filters, restores, and prevents use of archived accounts 68ms
+     → expected 200 "OK", got 404 "Not Found"
+   × F-08 account management > TEST-38 rejects archiving a nonzero balance account 66ms
+     → expected 409 "Conflict", got 404 "Not Found"
+   × F-08 account management > TEST-39 deletes unused accounts and retains accounts referenced by transactions 81ms
+     → expected 204 "No Content", got 404 "Not Found"
+   × F-08 account management > TEST-40 enforces authentication, USER role, and account ownership 131ms
+     → expected 403 "Forbidden", got 404 "Not Found"
+ ❯ tests/f09-opening-balance-management.api.test.ts (5 tests | 5 failed) 2661ms
+   × F-09 opening-balance management > TEST-42 records a wallet opening balance and date persistently 81ms
+     → expected 200 "OK", got 400 "Bad Request"
+   × F-09 opening-balance management > TEST-43 signs opening balances for loan accounts and includes their outstanding totals 76ms
+     → expected 200 "OK", got 400 "Bad Request"
+   × F-09 opening-balance management > TEST-44 permits a corrected Cash opening balance at zero and rejects an overdraft 150ms
+     → expected 400 "Bad Request", got 200 "OK"
+   × F-09 opening-balance management > TEST-45 rejects category and archived-account opening balances 76ms
+     → expected {
+  error: 'Opening balances can only be recorded for cash and loan accounts.'
+} response body, got { error: 'Opening balances can only be recorded for bank accounts.' }
+   × F-09 opening-balance management > TEST-46 enforces ownership, role and authentication 124ms
+     → expected 200 "OK", got 400 "Bad Request"
+ ❯ tests/f03-opening-balance.api.test.ts (6 tests | 1 failed) 2851ms
+   × F-03 opening balance > accepts wallet opening balances and rejects category account types 68ms
+     → expected 200 "OK", got 400 "Bad Request"
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 14 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/f03-opening-balance.api.test.ts > F-03 opening balance > accepts wallet opening balances and rejects category account types
+Error: expected 200 "OK", got 400 "Bad Request"
+ ❯ tests/f03-opening-balance.api.test.ts:93:51
+     91|     const token = await login(emails.user);
+     92|     await request(app).post(`/api/accounts/${walletAccountId}/opening-…
+     93|       .send({ amount: "10", date: "2026-11-03" }).expect(200);
+       |                                                   ^
+     94|     await request(app).post(`/api/accounts/${salaryAccountId}/opening-…
+     95|       .send({ amount: "10", date: "2026-11-03" }).expect(400);
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/14]⎯
+
+ FAIL  tests/f08-account-management.api.test.ts > F-08 account management > TEST-33 creates all five account types with zero balances
+Error: expected 201 "Created", got 404 "Not Found"
+ ❯ tests/f08-account-management.api.test.ts:46:119
+     44|     ];
+     45|     for (const account of accounts) {
+     46|       const response = await request(app).post("/api/accounts").set("A…
+       |                                                                                                                       ^
+     47|       expect(response.body).toMatchObject({ ...account, openingBalance…
+     48|     }
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/14]⎯
+
+ FAIL  tests/f08-account-management.api.test.ts > F-08 account management > TEST-34 rejects invalid types, subtype pairs, and names without writing
+Error: expected 400 "Bad Request", got 404 "Not Found"
+ ❯ tests/f08-account-management.api.test.ts:61:100
+     59|       { name: "   ", type: "CASH", subtype: "BANK" },
+     60|       { name: "x".repeat(61), type: "CASH", subtype: "BANK" },
+     61|     ]) await request(app).post("/api/accounts").set("Authorization", `…
+       |                                                                                                    ^
+     62|     expect(await prisma.account.count({ where: { ownerUserId: userAId …
+     63|   });
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/14]⎯
+
+ FAIL  tests/f08-account-management.api.test.ts > F-08 account management > TEST-35 enforces case-insensitive names per owner
+Error: expected 201 "Created", got 404 "Not Found"
+ ❯ tests/f08-account-management.api.test.ts:69:98
+     67|     const tokenB = await login(emails.userB);
+     68|     const body = { name: "Vacation", type: "CASH", subtype: "WALLET" };
+     69|     await request(app).post("/api/accounts").set("Authorization", `Bea…
+       |                                                                                                  ^
+     70|     await request(app).post("/api/accounts").set("Authorization", `Bea…
+     71|     await request(app).post("/api/accounts").set("Authorization", `Bea…
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/14]⎯
+
+ FAIL  tests/f08-account-management.api.test.ts > F-08 account management > TEST-36 renames an account but rejects type or subtype changes
+Error: expected 200 "OK", got 404 "Not Found"
+ ❯ tests/f08-account-management.api.test.ts:77:130
+     75|     const account = await prisma.account.create({ data: { ownerUserId:…
+     76|     const token = await login(emails.userA);
+     77|     await request(app).patch(`/api/accounts/${account.id}`).set("Autho…
+       |                                                                                                                                  ^
+     78|     await request(app).patch(`/api/accounts/${account.id}`).set("Autho…
+     79|     await request(app).patch(`/api/accounts/${account.id}`).set("Autho…
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/14]⎯
+
+ FAIL  tests/f08-account-management.api.test.ts > F-08 account management > TEST-37 archives, filters, restores, and prevents use of archived accounts
+Error: expected 200 "OK", got 404 "Not Found"
+ ❯ tests/f08-account-management.api.test.ts:86:125
+     84|     const account = await prisma.account.create({ data: { ownerUserId:…
+     85|     const token = await login(emails.userA);
+     86|     const archived = await request(app).post(`/api/accounts/${account.…
+       |                                                                                                                             ^
+     87|     expect(archived.body.archivedAt).toEqual(expect.any(String));
+     88|     const normalList = await request(app).get("/api/accounts").set("Au…
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/14]⎯
+
+ FAIL  tests/f08-account-management.api.test.ts > F-08 account management > TEST-38 rejects archiving a nonzero balance account
+Error: expected 409 "Conflict", got 404 "Not Found"
+ ❯ tests/f08-account-management.api.test.ts:101:108
+     99|     const account = await prisma.account.create({ data: { ownerUserId:…
+    100|     const token = await login(emails.userA);
+    101|     await request(app).post(`/api/accounts/${account.id}/archive`).set…
+       |                                                                                                            ^
+    102|     const unchanged = await prisma.account.findUniqueOrThrow({ where: …
+    103|     expect(unchanged.openingBalance.toString()).toBe("500");
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/14]⎯
+
+ FAIL  tests/f08-account-management.api.test.ts > F-08 account management > TEST-39 deletes unused accounts and retains accounts referenced by transactions
+Error: expected 204 "No Content", got 404 "Not Found"
+ ❯ tests/f08-account-management.api.test.ts:111:101
+
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/14]⎯
+
+ FAIL  tests/f08-account-management.api.test.ts > F-08 account management > TEST-40 enforces authentication, USER role, and account ownership
+Error: expected 403 "Forbidden", got 404 "Not Found"
+ ❯ tests/f08-account-management.api.test.ts:127:92
+    125|       () => request(app).delete(`/api/accounts/${account.id}`),
+    126|     ];
+    127|     for (const call of foreignCalls) await call().set("Authorization",…
+       |                                                                                            ^
+    128|     const adminCalls = [
+    129|       () => request(app).get("/api/accounts"),
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/14]⎯
+
+ FAIL  tests/f09-opening-balance-management.api.test.ts > F-09 opening-balance management > TEST-42 records a wallet opening balance and date persistently
+Error: expected 200 "OK", got 400 "Bad Request"
+ ❯ tests/f09-opening-balance-management.api.test.ts:44:162
+     42|     const wallet = await prisma.account.create({ data: { ownerUserId: …
+     43|     const token = await login(emails.user);
+     44|     await request(app).post(`/api/accounts/${wallet.id}/opening-balanc…
+       |                                                                                                                                                                  ^
+     45|     const account = await prisma.account.findUniqueOrThrow({ where: { …
+     46|     expect(account.openingBalance.toString()).toBe("750");
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/14]⎯
+
+ FAIL  tests/f09-opening-balance-management.api.test.ts > F-09 opening-balance management > TEST-43 signs opening balances for loan accounts and includes their outstanding totals
+Error: expected 200 "OK", got 400 "Bad Request"
+ ❯ tests/f09-opening-balance-management.api.test.ts:55:158
+     53|     const taken = await prisma.account.create({ data: { ownerUserId: u…
+     54|     const token = await login(emails.user);
+     55|     await request(app).post(`/api/accounts/${given.id}/opening-balance…
+       |                                                                                                                                                              ^
+     56|     await request(app).post(`/api/accounts/${taken.id}/opening-balance…
+     57|     const givenSaved = await prisma.account.findUniqueOrThrow({ where:…
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/14]⎯
+
+ FAIL  tests/f09-opening-balance-management.api.test.ts > F-09 opening-balance management > TEST-44 permits a corrected Cash opening balance at zero and rejects an overdraft
+Error: expected 400 "Bad Request", got 200 "OK"
+ ❯ tests/f09-opening-balance-management.api.test.ts:69:160
+
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/14]⎯
+
+ FAIL  tests/f09-opening-balance-management.api.test.ts > F-09 opening-balance management > TEST-45 rejects category and archived-account opening balances
+Error: expected {
+  error: 'Opening balances can only be recorded for cash and loan accounts.'
+} response body, got { error: 'Opening balances can only be recorded for bank accounts.' }
+
+- Expected
++ Received
+
+  Object {
+-   "error": "Opening balances can only be recorded for cash and loan accounts.",
++   "error": "Opening balances can only be recorded for bank accounts.",
+  }
+
+ ❯ tests/f09-opening-balance-management.api.test.ts:79:134
+
+ ❯ error node_modules/supertest/lib/test.js:487:15
+ ❯ Test._assertBody node_modules/supertest/lib/test.js:345:16
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/14]⎯
+
+ FAIL  tests/f09-opening-balance-management.api.test.ts > F-09 opening-balance management > TEST-46 enforces ownership, role and authentication
+Error: expected 200 "OK", got 400 "Bad Request"
+ ❯ tests/f09-opening-balance-management.api.test.ts:93:126
+     91|     const adminToken = await login(emails.admin);
+     92|     const body = { amount: "10", date: "2026-11-01" };
+     93|     await request(app).post(`/api/accounts/${wallet.id}/opening-balanc…
+       |                                                                                                                              ^
+     94|     await request(app).post(`/api/accounts/${otherAccountId}/opening-b…
+     95|     await request(app).post(`/api/accounts/${wallet.id}/opening-balanc…
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/14]⎯
+
+ Test Files  3 failed (3)
+      Tests  14 failed | 5 passed (19)
+   Start at  19:55:13
+   Duration  9.75s (transform 117ms, setup 0ms, collect 315ms, tests 8.41s, environment 0ms, prepare 79ms)

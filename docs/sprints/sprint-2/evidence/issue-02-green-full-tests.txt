@@ -1,0 +1,56 @@
+
+> personal-money-expense-logging-system@1.0.0 test
+> npm --prefix server test && npm --prefix client test
+
+
+> money-tracker-server@1.0.0 test
+> vitest run
+
+
+ RUN  v2.1.9 D:/KMUTT/Year3/CPE334-Software_Engineering/Project/server
+
+ ✓ tests/f08-account-management.api.test.ts (8 tests) 5502ms
+   ✓ F-08 account management > TEST-39 deletes unused accounts and retains accounts referenced by transactions 2176ms
+ ✓ tests/f06-repayment-overview.api.test.ts (7 tests) 5284ms
+   ✓ F-06 credit-card repayment and overview > completes and retrieves the full Sprint 1 journey with correct final values 2323ms
+ ✓ tests/f12-transfers.api.test.ts (8 tests) 5205ms
+   ✓ F-12 transfers and shared Cash-outflow rules > TEST-60 transfers money and persists the note without changing summaries 2234ms
+ ✓ tests/f09-opening-balance-management.api.test.ts (5 tests) 4894ms
+   ✓ F-09 opening-balance management > TEST-43 signs opening balances for loan accounts and includes their outstanding totals 2162ms
+ ✓ tests/f03-opening-balance.api.test.ts (6 tests) 2773ms
+ ✓ tests/f05-split-payment.api.test.ts (3 tests) 4607ms
+   ✓ F-05 split payment > persists a split credit-card purchase, updates debt and expense summary, and returns history 2217ms
+ ✓ tests/f04-receive-money.api.test.ts (3 tests) 4640ms
+   ✓ F-04 receive money > persists salary, updates balance and income summary, and returns history 2212ms
+ ✓ tests/f02-account-foundation.api.test.ts (6 tests) 2529ms
+ ✓ tests/f01-auth-role-access.api.test.ts (7 tests) 2656ms
+ ✓ tests/demo-seed-recovery.test.ts (1 test) 2293ms
+ ✓ tests/f07-user-registration.api.test.ts (3 tests) 2281ms
+ ✓ tests/f12-balance-calculation.unit.test.ts (1 test) 1ms
+ ✓ tests/readiness.api.test.ts (2 tests) 8ms
+
+ Test Files  13 passed (13)
+      Tests  60 passed (60)
+   Start at  20:11:26
+   Duration  44.24s (transform 261ms, setup 0ms, collect 617ms, tests 42.67s, environment 0ms, prepare 78ms)
+
+
+> money-tracker-client@1.0.0 test
+> vitest run
+
+
+ RUN  v2.1.9 D:/KMUTT/Year3/CPE334-Software_Engineering/Project/client
+
+ ✓ tests/App.test.tsx (10 tests) 8145ms
+   ✓ authentication and account UI > logs in, saves an opening bank balance and date, and logs out 1309ms
+   ✓ authentication and account UI > records received salary and refreshes financial history 1145ms
+   ✓ authentication and account UI > records a split credit-card purchase and refreshes expense history 1241ms
+   ✓ authentication and account UI > records a credit-card repayment and refreshes the overview 1106ms
+   ✓ authentication and account UI > TEST-31 displays the server's insufficient-balance repayment message 1200ms
+   ✓ authentication and account UI > shows administrator access controls without loading financial accounts 923ms
+   ✓ authentication and account UI > registers a normal user and returns to sign in with a notification 915ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  20:12:13
+   Duration  13.04s (transform 126ms, setup 84ms, collect 261ms, tests 8.15s, environment 528ms, prepare 86ms)
