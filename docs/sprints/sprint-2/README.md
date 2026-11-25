@@ -9,12 +9,12 @@ This file defines the rules every Sprint 2 feature shares. Each feature contract
 
 | Feature | Contract | Issue / branch | Owner → Reviewer | AC | Tests |
 |---|---|---|---|---|---|
-| F-08 Account management | [F-08](F-08-account-management.md) | 02 `SP2-02-F08-F09-accounts-opening-balance` | Tana → Thanaphon | AC-41–AC-48 | TEST-33–TEST-41 |
-| F-09 Opening-balance management | [F-09](F-09-opening-balance-management.md) | 02 (same branch) | Tana → Thanaphon | AC-49–AC-53 | TEST-42–TEST-46 |
+| F-08 Account management | [F-08](F-08-account-management.md) | 02 `SP2-02-F08-F09-accounts-opening-balance` | Thanaphon → Tana | AC-41–AC-48 | TEST-33–TEST-41 |
+| F-09 Opening-balance management | [F-09](F-09-opening-balance-management.md) | 02 (same branch) | Thanaphon → Tana | AC-49–AC-53 | TEST-42–TEST-46 |
 | F-10 Loan Given | [F-10](F-10-loan-given.md) | 03 `SP2-03-F10-F11-loans` | Thanaphon → Tana | AC-54–AC-59 | TEST-47–TEST-52 |
 | F-11 Loan Taken and borrowing | [F-11](F-11-loan-taken-borrowing.md) | 03 (same branch) | Thanaphon → Tana | AC-60–AC-66 | TEST-53–TEST-59 |
-| F-12 Transfers and the shared Cash-outflow rule | [F-12](F-12-transfers.md) | 01 `SP2-01-br12-shared-check-transfers` | Thanaphon → Tana | AC-67–AC-74 | TEST-60–TEST-68 |
-| F-13 Transaction corrections | [F-13](F-13-transaction-corrections.md) | 04 `SP2-04-F13-transaction-corrections` | Thanaphon → Tana | AC-75–AC-82 | TEST-69–TEST-77 |
+| F-12 Transfers and the shared Cash-outflow rule | [F-12](F-12-transfers.md) | 01 `SP2-01-br12-shared-check-transfers` | Tana → Thanaphon | AC-67–AC-74 | TEST-60–TEST-68 |
+| F-13 Transaction corrections | [F-13](F-13-transaction-corrections.md) | 04 `SP2-04-F13-transaction-corrections` | Tana → Thanaphon | AC-75–AC-82 | TEST-69–TEST-77 |
 | F-14 Transaction search and filtering | [F-14](F-14-transaction-search.md) | 05 `SP2-05-F14-transaction-search` | Tana → Thanaphon | AC-83–AC-89 | TEST-78–TEST-85 |
 
 UI acceptance criteria in each contract are implemented and tested in Issue 06 (`SP2-06-ui/sprint2-screens`), per decision D-5 in the plan. API acceptance criteria are implemented and tested on the feature's own branch.
@@ -130,4 +130,5 @@ All three are additive, so existing rows stay valid. The migrations run through 
 
 | Version | Date | Change | Issue |
 |---|---|---|---|
+| 1.0.1 | 2026-11-25 | Owners changed: F-08 to F-11 → Thanaphon; F-12 to F-14 → Tana (reviewers swapped). No contract content changed. | #73 |
 | 1.0 | 2026-11-25 | First Sprint 2 contract set: allocation matrix, balance rule D-10, BR-12 extension, shared validation and data changes. | #73 |

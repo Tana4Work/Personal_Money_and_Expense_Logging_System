@@ -41,15 +41,15 @@
 
 | ID | Feature | Behavior summary | Owner |
 |---|---|---|---|
-| F-08 | Account management | Create, rename and archive accounts of all five types (`CASH`, `LOAN_GIVEN`, `LOAN_TAKEN`, `INCOME`, `EXPENSE`), including wallet and bank subtypes. Only the owner can manage them. | Tana |
-| F-09 | Opening-balance management | Record or edit the opening balance of a bank or wallet account. Correct a wrong value without making Cash negative. | Tana |
+| F-08 | Account management | Create, rename and archive accounts of all five types (`CASH`, `LOAN_GIVEN`, `LOAN_TAKEN`, `INCOME`, `EXPENSE`), including wallet and bank subtypes. Only the owner can manage them. | Thanaphon |
+| F-09 | Opening-balance management | Record or edit the opening balance of a bank or wallet account. Correct a wrong value without making Cash negative. | Thanaphon |
 | F-10 | Loan Given | Lend money: a payment allocated to `LOAN_GIVEN`. Receive a repayment of a loan given. The outstanding amount is tracked. | Thanaphon |
 | F-11 | Loan Taken and borrowing | Borrow money: a receipt allocated to `BORROWING`. Repay any loan-taken account, not only the card. Debt is tracked. | Thanaphon |
-| F-12 | Transfers | Move money between the user's own Cash accounts, with BR-12 applied to the source. | Thanaphon |
-| F-13 | Transaction corrections | Edit or delete a transaction. Allocations, ownership and BR-12 are re-validated. | Thanaphon |
+| F-12 | Transfers | Move money between the user's own Cash accounts, with BR-12 applied to the source. | Tana |
+| F-13 | Transaction corrections | Edit or delete a transaction. Allocations, ownership and BR-12 are re-validated. | Tana |
 | F-14 | Transaction search and filtering | Server-side filters, restricted to the owner, with pagination. | Tana |
-| — | New UI for Sprint 2 | Restructure the single-page client (`client/src/App.tsx`) into navigable screens for F-08 to F-14, then update `UI-specs.md`. | Tana |
-| BR-12 | Shared no-overdraft check | Move the repayment-only check into one shared helper used by every outflow from a Cash account. | Thanaphon |
+| — | New UI for Sprint 2 | Restructure the single-page client (`client/src/App.tsx`) into navigable screens for F-08 to F-14, following the PMELS Charcoal spec in `UI-specs.md` v2.0. | Tana |
+| BR-12 | Shared no-overdraft check | Move the repayment-only check into one shared helper used by every outflow from a Cash account. | Tana |
 
 "Loan repayments beyond the card repayment" (from `PROJECT_PLAN.md`) is covered by F-10 and F-11 and is traced to both.
 
@@ -58,9 +58,9 @@
 | ID | Feature | D2 target | Owner |
 |---|---|---|---|
 | F-15 | Category spending summaries (closes Lab 6 UF-03) | Implemented and tested | Tana |
-| F-16 | Favorite transactions and the favorites list | Contract only | Thanaphon |
+| F-16 | Favorite transactions and the favorites list | Contract only | Tana |
 | F-17 | Duplicate a transaction as an editable draft | Contract only | Tana |
-| F-18 | Income and expense reports | Contract only | Thanaphon |
+| F-18 | Income and expense reports | Contract only | Tana |
 | — | Hardening: regression fixes and validation clean-up (30-decimal defect, duplicated validation) | Planned | Both |
 
 ## 4. Design decisions
@@ -112,10 +112,10 @@ The same rules as Sprint 1 and Lab 7 apply:
 | No. | Issue title | Labels | Branch (from) | PR into | Author → Reviewer | Depends on | Target |
 |---|---|---|---|---|---|---|---|
 | 00 | SP2 Setup: Deliverable 2 plan, CI on `sprint2-staging`, Sprint 2 contracts (F-08–F-14) | `sprint-2`, `docs`, `contract` | Setup commits directly on `sprint2-staging`, then `SP2-00-docs/sprint2-contracts` | `sprint2-staging` | Plan/CI: Tana. Contracts: each owner writes their own and the other reviews | — | 25–26 Nov |
-| 01 | SP2: BR-12 shared outflow check + F-12 Transfers | `sprint-2`, `feature`, `rule` | `SP2-01-br12-shared-check-transfers` | `sprint2-staging` | Thanaphon → Tana | 00 | 26 Nov |
-| 02 | SP2: F-08 Account management + F-09 Opening-balance management | `sprint-2`, `feature` | `SP2-02-F08-F09-accounts-opening-balance` | `sprint2-staging` | Tana → Thanaphon | 00 | 26 Nov |
+| 01 | SP2: BR-12 shared outflow check + F-12 Transfers | `sprint-2`, `feature`, `rule` | `SP2-01-br12-shared-check-transfers` | `sprint2-staging` | Tana → Thanaphon | 00 | 26 Nov |
+| 02 | SP2: F-08 Account management + F-09 Opening-balance management | `sprint-2`, `feature` | `SP2-02-F08-F09-accounts-opening-balance` | `sprint2-staging` | Thanaphon → Tana | 00 | 26 Nov |
 | 03 | SP2: F-10 Loan Given + F-11 Loan Taken and borrowing | `sprint-2`, `feature` | `SP2-03-F10-F11-loans` | `sprint2-staging` | Thanaphon → Tana | 01, 02 | 27 Nov |
-| 04 | SP2: F-13 Transaction corrections | `sprint-2`, `feature`, `rule` | `SP2-04-F13-transaction-corrections` | `sprint2-staging` | Thanaphon → Tana | 01, 03 | 28 Nov (AM) |
+| 04 | SP2: F-13 Transaction corrections | `sprint-2`, `feature`, `rule` | `SP2-04-F13-transaction-corrections` | `sprint2-staging` | Tana → Thanaphon | 01, 03 | 28 Nov (AM) |
 | 05 | SP2: F-14 Transaction search and filtering | `sprint-2`, `feature` | `SP2-05-F14-transaction-search` | `sprint2-staging` | Tana → Thanaphon | 02 | 27 Nov |
 | 06 | SP2: New UI for Sprint 2 features | `sprint-2`, `ui` | `SP2-06-ui/sprint2-screens` | `sprint2-staging` | Tana → Thanaphon | 01–05 APIs; the screen shell can start from the contracts | 27–28 Nov |
 | 07 | SP2: Sprint 2 release v2.0.0 and post-deployment checks | `sprint-2`, `release` | none: release PR `sprint2-staging` → `main` | `main` | Thanaphon → Tana | 01–06 | 28 Nov (midday) |
@@ -162,7 +162,7 @@ Planned, but not opened yet:
    - Route repayment through it.
    - Add the `TRANSFER` allocation on payment and receipt of a transfer.
 3. Run the full `npm test` and record pass, fail and skip counts.
-- **Done when:** CI is green, the PR has a specific review comment from Tana, and the branch is merged.
+- **Done when:** CI is green, the PR has a specific review comment from Thanaphon, and the branch is merged.
 
 ### Issue 02: F-08 Account management + F-09 Opening-balance management
 
@@ -175,7 +175,7 @@ Planned, but not opened yet:
   - Another user's account → 403.
   - Administrator → 403.
   - Persisted after re-fetch.
-- **Done when:** CI is green, the PR has a review comment from Thanaphon, and the branch is merged.
+- **Done when:** CI is green, the PR has a review comment from Tana, and the branch is merged.
 
 ### Issue 03: F-10 Loan Given + F-11 Loan Taken and borrowing
 
@@ -205,7 +205,7 @@ Planned, but not opened yet:
   - Another user's transaction → 403.
   - The edited values persist.
   - Summaries are recalculated.
-- **Done when:** CI is green, the PR has a review comment from Tana, and the branch is merged.
+- **Done when:** CI is green, the PR has a review comment from Thanaphon, and the branch is merged.
 
 ### Issue 05: F-14 Transaction search and filtering
 
@@ -226,9 +226,9 @@ Planned, but not opened yet:
   - Record (payment or charge with split allocation, receive money, transfer, repayment)
   - Loans (given and taken, with outstanding amounts)
   - History (search, filters, edit and delete)
-- Keep the Zen Green theme and the Administrator view. Every screen shows validation, loading, empty and server-error states. Server rejections are shown on screen as AC-40 does for repayment, with no client-side balance pre-check.
+- Apply the **PMELS Charcoal** design system in `UI-specs.md` v2.0 (tokens, components, screens, accessibility), replacing the Sprint 1 Zen Green theme. Keep the Administrator view. Every screen shows validation, loading, empty and server-error states. Server rejections are shown on screen as AC-40 does for repayment, with no client-side balance pre-check.
 - Client tests in `client/tests/` for each new form's validation and server-error display. Run the Sprint 1 UI tests again unchanged as regression checks.
-- Update `UI-specs.md`, which currently describes only F-01 to F-03, to cover every screen.
+- When it merges, update the "Implementation status" table in `UI-specs.md` (the spec itself was written in Issue 00).
 - **Done when:** CI is green, the PR has a review comment from Thanaphon, the full Sprint 1 journey and every Sprint 2 journey work through the UI on local Docker, and the branch is merged.
 
 ### Issue 07: Sprint 2 release v2.0.0
@@ -261,8 +261,8 @@ Exams run from 1 to 11 December. Before the D2 PDF goes in, check these dates ag
 
 | Date | Work | Owner | Exit check |
 |---|---|---|---|
-| Mon 30 Nov | F-16 Favorites and F-17 Duplicate as draft (contracts already merged in Issue 08, built test-first) | Thanaphon / Tana | Both merged into `sprint3-staging` |
-| 1–3 Dec | F-18 Income and expense reports. Hardening: shared validation and any D2 defects | Thanaphon / Both | Merged, CI green |
+| Mon 30 Nov | F-16 Favorites and F-17 Duplicate as draft (contracts already merged in Issue 08, built test-first) | Tana (Thanaphon reviews) | Both merged into `sprint3-staging` |
+| 1–3 Dec | F-18 Income and expense reports (Tana). Hardening: shared validation and any D2 defects (Both) | Tana / Both | Merged, CI green |
 | 4–6 Dec | Release `v3.0.0-rc` and deploy. Ask CPMS to re-test the Lab 6 UAT cases and the affected journeys | Both + CPMS | UAT re-test records with tester and version |
 | 7–10 Dec | Fix accepted UAT findings, then run the full regression suite on the final commit. Tag `v3.0.0` | Both | All tests pass on the final commit, deployed |
 | 11–12 Dec | Final traceability (every requirement marked PASS, FAIL, SKIPPED or INCOMPLETE), NFR checks, Definition of Done review, video (max 4 min, both students), final PDF | Both | PDF and YouTube link ready |
@@ -291,6 +291,7 @@ No real passwords, tokens or secrets go into the PDF or Git. Test accounts come 
 | The single-file client causes merge conflicts | All UI work goes in Issue 06 (D-5). Feature branches stay on the API and tests. |
 | Every merge to `main` redeploys | Only release PRs (07 and 09) go to `main`. Lab 7 report merges must not land in the middle of a Sprint 2 change. |
 | BR-12 refactor breaks the Lab 7 behavior | TEST-28 to TEST-32 run unchanged as regression guards in Issue 01. |
+| Uneven load after the owner change (25 Nov): Tana owns Issues 01, 04, 05, 06 and F-15 to F-18; Thanaphon owns 02 and 03 | Thanaphon takes the Issue 07 and 09 releases, the evidence capture, and pairs on Issue 06 screens once 02 and 03 merge. Rebalance at the 27 Nov check-in if 01 or 06 slips. |
 | Coverage claims don't match the tests | Each matrix row points to the real test file and name. A test that hasn't run is marked "planned", never "done". |
 
 ## 10. Change log
@@ -298,4 +299,5 @@ No real passwords, tokens or secrets go into the PDF or Git. Test accounts come 
 | Date | Change |
 |---|---|
 | 2026-11-25 | First version: scope, decisions D-1 to D-9, Issues 00–07, planned 08–10, schedule and evidence map. |
+| 2026-11-25 | Owners changed: F-08 to F-11 → Thanaphon; F-12 to F-14, the BR-12 helper, the new UI and F-15 to F-18 → Tana. Reviewers swapped to match. `UI-specs.md` rewritten as the PMELS Charcoal design system (v2.0). |
 | 2026-11-25 | Sprint 2 contracts v1.0 written (Issue 00). D-6 to D-9 adopted. D-10 (balance calculation) and D-11 (2-decimal amounts, note) added. Completion plan to 13 Dec added. |
