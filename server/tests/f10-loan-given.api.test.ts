@@ -90,6 +90,13 @@ describe("F-10 loan given", () => {
     expect(await counts()).toEqual(before);
     await request(app).post("/api/transactions/receive").set("Authorization", `Bearer ${token}`).send({ totalAmount: "600", date: "2026-11-26", receivingAccountId: bankId, allocations: [{ accountId: loanGivenId, allocationType: "REPAYMENT", amount: "600" }] }).expect(201);
     expect((await balances(token)).find(({ accountId }) => accountId === loanGivenId)?.balance).toBe("0");
+
+    const concurrentLoan = await prisma.account.create({ data: { ownerUserId: userId, name: "Concurrent loan", type: AccountType.LOAN_GIVEN, subtype: AccountSubtype.OTHER } });
+    await request(app).post("/api/transactions/payment").set("Authorization", `Bearer ${token}`).send({ totalAmount: "600", date: "2026-11-26", sourceAccountId: bankId, allocations: [{ accountId: concurrentLoan.id, allocationType: "LOAN_GIVEN", amount: "600" }] }).expect(201);
+    const concurrent = await Promise.all(["400", "400"].map((totalAmount) => request(app).post("/api/transactions/receive").set("Authorization", `Bearer ${token}`).send({ totalAmount, date: "2026-11-26", receivingAccountId: bankId, allocations: [{ accountId: concurrentLoan.id, allocationType: "REPAYMENT", amount: totalAmount }] })));
+    expect(concurrent.map(({ status }) => status).sort()).toEqual([201, 400]);
+    expect(concurrent.find(({ status }) => status === 400)?.body).toEqual({ error: "The repayment is more than the amount owed on this loan." });
+    expect((await balances(token)).find(({ accountId }) => accountId === concurrentLoan.id)?.balance).toBe("200");
   });
 
   it("TEST-50 applies BR-12 to lending and permits a loan that leaves zero", async () => {

@@ -196,6 +196,39 @@ async function assertCashBalancesNotNegative<T>(
   return result;
 }
 
+class LoanGivenOverpaymentError extends Error {
+  constructor() {
+    super("The repayment is more than the amount owed on this loan.");
+    this.name = "LoanGivenOverpaymentError";
+  }
+}
+
+async function assertLoanGivenRepaymentsNotOverBalance(
+  transaction: Prisma.TransactionClient,
+  ownerUserId: number,
+  repayments: Array<{ accountId: number; amount: Prisma.Decimal }>,
+): Promise<void> {
+  const accountIds = [...new Set(repayments.map(({ accountId }) => accountId))].sort((left, right) => left - right);
+  if (accountIds.length === 0) return;
+  await transaction.$queryRaw<Array<{ id: number }>>(Prisma.sql`
+    SELECT "id" FROM "Account"
+    WHERE "ownerUserId" = ${ownerUserId}
+      AND "type" = 'LOAN_GIVEN'::"AccountType"
+      AND "id" IN (${Prisma.join(accountIds)})
+    ORDER BY "id" FOR UPDATE
+  `);
+  const balances = await calculateAccountBalances(transaction, ownerUserId);
+  const balanceById = new Map(balances.map(({ accountId, balance }) => [accountId, new Prisma.Decimal(balance)]));
+  const repaymentById = new Map<number, Prisma.Decimal>();
+  for (const repayment of repayments) {
+    repaymentById.set(repayment.accountId, (repaymentById.get(repayment.accountId) ?? new Prisma.Decimal(0)).add(repayment.amount));
+  }
+  for (const [accountId, amount] of repaymentById) {
+    const outstanding = balanceById.get(accountId);
+    if (!outstanding || amount.greaterThan(outstanding)) throw new LoanGivenOverpaymentError();
+  }
+}
+
 app.get("/api/health", (_req, res) => res.status(200).json({ status: "ok", service: "Personal Money API" }));
 
 app.get("/api/ready", async (_req, res) => {
@@ -456,15 +489,15 @@ app.post("/api/transactions/receive", asyncRoute(async (req, res) => {
   const receivingAccountId = Number(req.body?.receivingAccountId);
   if (!Number.isInteger(receivingAccountId) || receivingAccountId <= 0) { res.status(400).json({ error: "A valid receiving account is required." }); return; }
   const allocations = req.body?.allocations;
-  if (!Array.isArray(allocations) || allocations.length === 0) { res.status(400).json({ error: "At least one income allocation is required." }); return; }
+  if (!Array.isArray(allocations) || allocations.length === 0) { res.status(400).json({ error: "At least one allocation is required." }); return; }
 
   let allocationTotal = new Prisma.Decimal(0);
   const allocationData: Array<{ accountId: number; allocationType: AllocationType; amount: Prisma.Decimal }> = [];
   for (const item of allocations) {
     const accountId = Number(item?.accountId);
     const lineAmount = parsePositiveAmount(item?.amount);
-    if (!Number.isInteger(accountId) || accountId <= 0 || !lineAmount || (item?.allocationType !== AllocationType.INCOME && item?.allocationType !== AllocationType.TRANSFER)) {
-      res.status(400).json({ error: "Each allocation must be a positive income or transfer allocation." }); return;
+    if (!Number.isInteger(accountId) || accountId <= 0 || !lineAmount || ![AllocationType.INCOME, AllocationType.TRANSFER, AllocationType.REPAYMENT, AllocationType.BORROWING].includes(item?.allocationType)) {
+      res.status(400).json({ error: "Each allocation must have a valid type and positive amount." }); return;
     }
     allocationTotal = allocationTotal.add(lineAmount);
     allocationData.push({ accountId, allocationType: item.allocationType, amount: lineAmount });
@@ -483,11 +516,17 @@ app.post("/api/transactions/receive", asyncRoute(async (req, res) => {
   const transferAccountIds: number[] = [];
   for (const line of allocationData) {
     const account = await prisma.account.findUnique({ where: { id: line.accountId } });
-    if (!account) { res.status(404).json({ error: line.allocationType === AllocationType.INCOME ? "Income account not found." : "Transfer account not found." }); return; }
+    if (!account) { res.status(404).json({ error: line.allocationType === AllocationType.INCOME ? "Income account not found." : "Allocation account not found." }); return; }
     if (account.ownerUserId !== user.id) { res.status(403).json({ error: "Allocation account access is not allowed." }); return; }
     if (account.archivedAt) { res.status(400).json({ error: "This account is archived." }); return; }
     if (line.allocationType === AllocationType.INCOME && account.type !== AccountType.INCOME) {
       res.status(400).json({ error: "Income allocations must use an income account." }); return;
+    }
+    if (line.allocationType === AllocationType.REPAYMENT && account.type !== AccountType.LOAN_GIVEN) {
+      res.status(400).json({ error: "Loan repayments must use a loan-given account." }); return;
+    }
+    if (line.allocationType === AllocationType.BORROWING && account.type !== AccountType.LOAN_TAKEN) {
+      res.status(400).json({ error: "Borrowing allocations must use a loan-taken account." }); return;
     }
     if (line.allocationType === AllocationType.TRANSFER) {
       if (account.type !== AccountType.CASH || (account.subtype !== AccountSubtype.BANK && account.subtype !== AccountSubtype.WALLET)) {
@@ -498,7 +537,8 @@ app.post("/api/transactions/receive", asyncRoute(async (req, res) => {
     }
   }
 
-  const createTransaction = () => prisma.transaction.create({
+  const loanGivenRepayments = allocationData.filter((line) => line.allocationType === AllocationType.REPAYMENT);
+  const createTransaction = (databaseTransaction?: Prisma.TransactionClient) => (databaseTransaction ?? prisma).transaction.create({
     data: {
       ownerUserId: user.id,
       formType: TransactionFormType.RECEIVE_MONEY,
@@ -510,27 +550,23 @@ app.post("/api/transactions/receive", asyncRoute(async (req, res) => {
     },
     include: transactionInclude,
   });
+  const createWithLoanGivenCheck = async (databaseTransaction: Prisma.TransactionClient) => {
+    await assertLoanGivenRepaymentsNotOverBalance(databaseTransaction, user.id, loanGivenRepayments);
+    return createTransaction(databaseTransaction);
+  };
   let transaction;
   try {
     transaction = transferAccountIds.length > 0
       ? await prisma.$transaction((databaseTransaction) => assertCashBalancesNotNegative(
         databaseTransaction, user.id, [receivingAccountId, ...transferAccountIds], "Insufficient balance in the source cash account.",
-        () => databaseTransaction.transaction.create({
-          data: {
-            ownerUserId: user.id,
-            formType: TransactionFormType.RECEIVE_MONEY,
-            receivingAccountId,
-            totalAmount: amount,
-            transactionDate,
-            note: note.value,
-            allocations: { create: allocationData },
-          },
-          include: transactionInclude,
-        }),
+        () => createWithLoanGivenCheck(databaseTransaction),
       ))
-      : await createTransaction();
+      : loanGivenRepayments.length > 0
+        ? await prisma.$transaction(createWithLoanGivenCheck)
+        : await createTransaction();
   } catch (error) {
     if (error instanceof CashOverdraftError) { res.status(400).json({ error: error.message }); return; }
+    if (error instanceof LoanGivenOverpaymentError) { res.status(400).json({ error: error.message }); return; }
     throw error;
   }
   res.status(201).json(transactionResponse(transaction));
@@ -548,15 +584,15 @@ app.post("/api/transactions/payment", asyncRoute(async (req, res) => {
   const sourceAccountId = Number(req.body?.sourceAccountId);
   if (!Number.isInteger(sourceAccountId) || sourceAccountId <= 0) { res.status(400).json({ error: "A valid source account is required." }); return; }
   const allocations = req.body?.allocations;
-  if (!Array.isArray(allocations) || allocations.length === 0) { res.status(400).json({ error: "At least one expense allocation is required." }); return; }
+  if (!Array.isArray(allocations) || allocations.length === 0) { res.status(400).json({ error: "At least one allocation is required." }); return; }
 
   let allocationTotal = new Prisma.Decimal(0);
   const allocationData: Array<{ accountId: number; allocationType: AllocationType; amount: Prisma.Decimal }> = [];
   for (const item of allocations) {
     const accountId = Number(item?.accountId);
     const lineAmount = parsePositiveAmount(item?.amount);
-    if (!Number.isInteger(accountId) || accountId <= 0 || !lineAmount || (item?.allocationType !== AllocationType.EXPENSE && item?.allocationType !== AllocationType.TRANSFER)) {
-      res.status(400).json({ error: "Each allocation must be a positive expense or transfer allocation." }); return;
+    if (!Number.isInteger(accountId) || accountId <= 0 || !lineAmount || ![AllocationType.EXPENSE, AllocationType.TRANSFER, AllocationType.REPAYMENT, AllocationType.LOAN_GIVEN].includes(item?.allocationType)) {
+      res.status(400).json({ error: "Each allocation must have a valid type and positive amount." }); return;
     }
     allocationTotal = allocationTotal.add(lineAmount);
     allocationData.push({ accountId, allocationType: item.allocationType, amount: lineAmount });
@@ -573,6 +609,9 @@ app.post("/api/transactions/payment", asyncRoute(async (req, res) => {
   const loanSource = sourceAccount.type === AccountType.LOAN_TAKEN
     && (sourceAccount.subtype === AccountSubtype.CREDIT_CARD || sourceAccount.subtype === AccountSubtype.OTHER);
   if (!cashSource && !loanSource) { res.status(400).json({ error: "Payments must use a cash or loan-taken account." }); return; }
+  if (loanSource && allocationData.some((line) => line.allocationType !== AllocationType.EXPENSE)) {
+    res.status(400).json({ error: "Loan-taken accounts can only be used for expense allocations." }); return;
+  }
 
   const transferAccountIds: number[] = [];
   for (const line of allocationData) {
@@ -580,11 +619,17 @@ app.post("/api/transactions/payment", asyncRoute(async (req, res) => {
       res.status(400).json({ error: "Transfers must use cash accounts." }); return;
     }
     const account = await prisma.account.findUnique({ where: { id: line.accountId } });
-    if (!account) { res.status(404).json({ error: line.allocationType === AllocationType.EXPENSE ? "Expense account not found." : "Transfer account not found." }); return; }
+    if (!account) { res.status(404).json({ error: line.allocationType === AllocationType.EXPENSE ? "Expense account not found." : "Allocation account not found." }); return; }
     if (account.ownerUserId !== user.id) { res.status(403).json({ error: "Allocation account access is not allowed." }); return; }
     if (account.archivedAt) { res.status(400).json({ error: "This account is archived." }); return; }
     if (line.allocationType === AllocationType.EXPENSE && account.type !== AccountType.EXPENSE) {
       res.status(400).json({ error: "Payment allocations must use expense accounts." }); return;
+    }
+    if (line.allocationType === AllocationType.LOAN_GIVEN && (!cashSource || account.type !== AccountType.LOAN_GIVEN)) {
+      res.status(400).json({ error: "Loan-given allocations require a Cash source and a loan-given account." }); return;
+    }
+    if (line.allocationType === AllocationType.REPAYMENT && (!cashSource || account.type !== AccountType.LOAN_TAKEN)) {
+      res.status(400).json({ error: "Repayment allocations require a Cash source and a loan-taken account." }); return;
     }
     if (line.allocationType === AllocationType.TRANSFER) {
       if (account.type !== AccountType.CASH || (account.subtype !== AccountSubtype.BANK && account.subtype !== AccountSubtype.WALLET)) {
@@ -699,24 +744,24 @@ app.post("/api/transactions/repayment", asyncRoute(async (req, res) => {
   if (!note.valid) { res.status(400).json({ error: "The note must be 200 characters or fewer." }); return; }
   const sourceAccountId = Number(req.body?.sourceAccountId);
   const receivingAccountId = Number(req.body?.receivingAccountId);
-  if (!Number.isInteger(sourceAccountId) || sourceAccountId <= 0) { res.status(400).json({ error: "A valid bank source account is required." }); return; }
-  if (!Number.isInteger(receivingAccountId) || receivingAccountId <= 0) { res.status(400).json({ error: "A valid credit-card destination is required." }); return; }
+  if (!Number.isInteger(sourceAccountId) || sourceAccountId <= 0) { res.status(400).json({ error: "A valid source account is required." }); return; }
+  if (!Number.isInteger(receivingAccountId) || receivingAccountId <= 0) { res.status(400).json({ error: "A valid loan-taken destination is required." }); return; }
 
   const prisma = getPrisma();
   const sourceAccount = await prisma.account.findUnique({ where: { id: sourceAccountId } });
   if (!sourceAccount) { res.status(404).json({ error: "Source account not found." }); return; }
   if (sourceAccount.ownerUserId !== user.id) { res.status(403).json({ error: "Source account access is not allowed." }); return; }
   if (sourceAccount.archivedAt) { res.status(400).json({ error: "This account is archived." }); return; }
-  if (sourceAccount.type !== AccountType.CASH || sourceAccount.subtype !== AccountSubtype.BANK) {
-    res.status(400).json({ error: "Repayments must use a bank account." }); return;
+  if (sourceAccount.type !== AccountType.CASH || (sourceAccount.subtype !== AccountSubtype.BANK && sourceAccount.subtype !== AccountSubtype.WALLET)) {
+    res.status(400).json({ error: "Repayments must use a bank or wallet account." }); return;
   }
 
   const receivingAccount = await prisma.account.findUnique({ where: { id: receivingAccountId } });
-  if (!receivingAccount) { res.status(404).json({ error: "Credit-card account not found." }); return; }
-  if (receivingAccount.ownerUserId !== user.id) { res.status(403).json({ error: "Credit-card account access is not allowed." }); return; }
+  if (!receivingAccount) { res.status(404).json({ error: "Loan-taken account not found." }); return; }
+  if (receivingAccount.ownerUserId !== user.id) { res.status(403).json({ error: "Loan-taken account access is not allowed." }); return; }
   if (receivingAccount.archivedAt) { res.status(400).json({ error: "This account is archived." }); return; }
-  if (receivingAccount.type !== AccountType.LOAN_TAKEN || receivingAccount.subtype !== AccountSubtype.CREDIT_CARD) {
-    res.status(400).json({ error: "Repayments must use a credit-card account." }); return;
+  if (receivingAccount.type !== AccountType.LOAN_TAKEN || (receivingAccount.subtype !== AccountSubtype.CREDIT_CARD && receivingAccount.subtype !== AccountSubtype.OTHER)) {
+    res.status(400).json({ error: "Repayments must use a loan-taken account." }); return;
   }
 
   let transaction;
