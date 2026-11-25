@@ -1,0 +1,174 @@
+
+> money-tracker-server@1.0.0 test
+> vitest run tests/f10-loan-given.api.test.ts tests/f11-loan-taken-borrowing.api.test.ts
+
+
+ RUN  v2.1.9 D:/KMUTT/Year3/CPE334-Software_Engineering/Project/server
+
+ ❯ tests/f11-loan-taken-borrowing.api.test.ts (7 tests | 5 failed) 5618ms
+   × F-11 loan taken and borrowing > TEST-53 records borrowing as debt and excludes it from income 2345ms
+     → expected 201 "Created", got 400 "Bad Request"
+   × F-11 loan taken and borrowing > TEST-55 repays any loan-taken account from a wallet 192ms
+     → expected 201 "Created", got 400 "Bad Request"
+   × F-11 loan taken and borrowing > TEST-56 supports a repayment allocation on the payment form and preserves F-06 behavior 211ms
+     → expected 201 "Created", got 400 "Bad Request"
+   × F-11 loan taken and borrowing > TEST-57 enforces BR-12 for wallet repayment and still permits card overpayment 172ms
+     → expected 201 "Created", got 400 "Bad Request"
+   × F-11 loan taken and borrowing > TEST-59 enforces account ownership, role, and authentication 186ms
+     → expected 403 "Forbidden", got 400 "Bad Request"
+ ❯ tests/f10-loan-given.api.test.ts (6 tests | 5 failed) 3173ms
+   × F-10 loan given > TEST-47 lends from Cash and persists the outstanding loan 161ms
+     → expected 201 "Created", got 400 "Bad Request"
+   × F-10 loan given > TEST-48 receives a loan repayment without classifying it as income or expense 150ms
+     → expected 201 "Created", got 400 "Bad Request"
+   × F-10 loan given > TEST-49 rejects over-repayment but accepts exactly the outstanding amount 151ms
+     → expected 201 "Created", got 400 "Bad Request"
+   × F-10 loan given > TEST-50 applies BR-12 to lending and permits a loan that leaves zero 258ms
+     → expected { Object (error) } to deeply equal { Object (error) }
+   × F-10 loan given > TEST-52 enforces ownership and role access and keeps summaries private 204ms
+     → expected 403 "Forbidden", got 400 "Bad Request"
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/f10-loan-given.api.test.ts > F-10 loan given > TEST-47 lends from Cash and persists the outstanding loan
+Error: expected 201 "Created", got 400 "Bad Request"
+ ❯ tests/f10-loan-given.api.test.ts:67:8
+     65|       totalAmount: "1000", date: "2026-11-26", sourceAccountId: bankId,
+     66|       allocations: [{ accountId: loanGivenId, allocationType: "LOAN_GI…
+     67|     }).expect(201);
+       |        ^
+     68|     expect((await balances(token)).find(({ accountId }) => accountId =…
+     69|     expect((await balances(token)).find(({ accountId }) => accountId =…
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  tests/f10-loan-given.api.test.ts > F-10 loan given > TEST-48 receives a loan repayment without classifying it as income or expense
+Error: expected 201 "Created", got 400 "Bad Request"
+ ❯ tests/f10-loan-given.api.test.ts:76:262
+
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  tests/f10-loan-given.api.test.ts > F-10 loan given > TEST-49 rejects over-repayment but accepts exactly the outstanding amount
+Error: expected 201 "Created", got 400 "Bad Request"
+ ❯ tests/f10-loan-given.api.test.ts:86:262
+
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  tests/f10-loan-given.api.test.ts > F-10 loan given > TEST-50 applies BR-12 to lending and permits a loan that leaves zero
+AssertionError: expected { Object (error) } to deeply equal { Object (error) }
+
+- Expected
++ Received
+
+  Object {
+-   "error": "Insufficient balance in the source cash account.",
++   "error": "Each allocation must be a positive expense or transfer allocation.",
+  }
+
+ ❯ tests/f10-loan-given.api.test.ts:100:27
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  tests/f10-loan-given.api.test.ts > F-10 loan given > TEST-52 enforces ownership and role access and keeps summaries private
+Error: expected 403 "Forbidden", got 400 "Bad Request"
+ ❯ tests/f10-loan-given.api.test.ts:124:263
+
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  tests/f11-loan-taken-borrowing.api.test.ts > F-11 loan taken and borrowing > TEST-53 records borrowing as debt and excludes it from income
+Error: expected 201 "Created", got 400 "Bad Request"
+ ❯ tests/f11-loan-taken-borrowing.api.test.ts:65:264
+
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  tests/f11-loan-taken-borrowing.api.test.ts > F-11 loan taken and borrowing > TEST-55 repays any loan-taken account from a wallet
+Error: expected 201 "Created", got 400 "Bad Request"
+ ❯ tests/f11-loan-taken-borrowing.api.test.ts:81:264
+
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  tests/f11-loan-taken-borrowing.api.test.ts > F-11 loan taken and borrowing > TEST-56 supports a repayment allocation on the payment form and preserves F-06 behavior
+Error: expected 201 "Created", got 400 "Bad Request"
+ ❯ tests/f11-loan-taken-borrowing.api.test.ts:92:256
+
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  tests/f11-loan-taken-borrowing.api.test.ts > F-11 loan taken and borrowing > TEST-57 enforces BR-12 for wallet repayment and still permits card overpayment
+Error: expected 201 "Created", got 400 "Bad Request"
+ ❯ tests/f11-loan-taken-borrowing.api.test.ts:100:262
+
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  tests/f11-loan-taken-borrowing.api.test.ts > F-11 loan taken and borrowing > TEST-59 enforces account ownership, role, and authentication
+Error: expected 403 "Forbidden", got 400 "Bad Request"
+ ❯ tests/f11-loan-taken-borrowing.api.test.ts:123:265
+
+ ❯ Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ ❯ node_modules/supertest/lib/test.js:460:13
+ ❯ Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ ❯ Test.assert node_modules/supertest/lib/test.js:302:23
+ ❯ localAssert node_modules/supertest/lib/test.js:220:38
+ ❯ Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+ Test Files  2 failed (2)
+      Tests  10 failed | 3 passed (13)
+   Start at  20:28:54
+   Duration  10.03s (transform 126ms, setup 0ms, collect 322ms, tests 8.79s, environment 0ms, prepare 75ms)
