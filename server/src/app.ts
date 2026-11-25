@@ -28,7 +28,7 @@ async function requireUser(req: Request, res: Response): Promise<SafeUser | null
   return user;
 }
 
-function accountResponse(account: { id: number; name: string; type: string; subtype: string; openingBalance: { toString(): string }; openingBalanceDate: Date | null; createdAt: Date }) {
+function accountResponse(account: { id: number; name: string; type: string; subtype: string; openingBalance: { toString(): string }; openingBalanceDate: Date | null; archivedAt: Date | null; createdAt: Date }) {
   return {
     id: account.id,
     name: account.name,
@@ -36,8 +36,25 @@ function accountResponse(account: { id: number; name: string; type: string; subt
     subtype: account.subtype,
     openingBalance: account.openingBalance.toString(),
     openingBalanceDate: account.openingBalanceDate?.toISOString() ?? null,
+    archivedAt: account.archivedAt?.toISOString() ?? null,
     createdAt: account.createdAt.toISOString(),
   };
+}
+
+function isAccountType(value: unknown): value is AccountType {
+  return typeof value === "string" && Object.values(AccountType).includes(value as AccountType);
+}
+
+function isAllowedAccountSubtype(type: AccountType, subtype: unknown): subtype is AccountSubtype {
+  if (type === AccountType.CASH) return subtype === AccountSubtype.BANK || subtype === AccountSubtype.WALLET;
+  if (type === AccountType.LOAN_TAKEN) return subtype === AccountSubtype.CREDIT_CARD || subtype === AccountSubtype.OTHER;
+  return subtype === AccountSubtype.OTHER;
+}
+
+function parseAccountName(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const name = value.trim();
+  return name.length >= 1 && name.length <= 60 ? name : null;
 }
 
 function transactionResponse(transaction: {
@@ -241,11 +258,33 @@ app.get("/api/auth/me", asyncRoute(async (req, res) => {
 app.get("/api/accounts", asyncRoute(async (req, res) => {
   const user = await requireUser(req, res);
   if (!user) return;
+  const includeArchived = req.query.includeArchived === "true";
   const accounts = await getPrisma().account.findMany({
-    where: { ownerUserId: user.id },
+    where: { ownerUserId: user.id, ...(includeArchived ? {} : { archivedAt: null }) },
     orderBy: [{ name: "asc" }, { id: "asc" }],
   });
   res.status(200).json(accounts.map(accountResponse));
+}));
+
+app.post("/api/accounts", asyncRoute(async (req, res) => {
+  const user = await requireUser(req, res);
+  if (!user) return;
+  const name = parseAccountName(req.body?.name);
+  if (!name) { res.status(400).json({ error: "Account name must be 1 to 60 characters." }); return; }
+  if (!isAccountType(req.body?.type)) { res.status(400).json({ error: "A valid account type is required." }); return; }
+  const type = req.body.type;
+  if (!isAllowedAccountSubtype(type, req.body?.subtype)) { res.status(400).json({ error: "This subtype is not allowed for this account type." }); return; }
+  const subtype = req.body.subtype;
+  const created = await getPrisma().$transaction(async (transaction) => {
+    const duplicate = await transaction.account.findFirst({
+      where: { ownerUserId: user.id, name: { equals: name, mode: "insensitive" } },
+      select: { id: true },
+    });
+    if (duplicate) return null;
+    return transaction.account.create({ data: { ownerUserId: user.id, name, type, subtype } });
+  });
+  if (!created) { res.status(409).json({ error: "An account with this name already exists." }); return; }
+  res.status(201).json(accountResponse(created));
 }));
 
 app.get("/api/accounts/:accountId", asyncRoute(async (req, res) => {
@@ -261,6 +300,92 @@ app.get("/api/accounts/:accountId", asyncRoute(async (req, res) => {
   res.status(200).json(accountResponse(account));
 }));
 
+app.patch("/api/accounts/:accountId", asyncRoute(async (req, res) => {
+  const user = await requireUser(req, res);
+  if (!user) return;
+  const accountId = Number(req.params.accountId);
+  if (!Number.isInteger(accountId) || accountId <= 0) { res.status(400).json({ error: "A valid account ID is required." }); return; }
+  if (req.body && (Object.hasOwn(req.body, "type") || Object.hasOwn(req.body, "subtype"))) {
+    res.status(400).json({ error: "Account type and subtype cannot be changed." }); return;
+  }
+  const name = parseAccountName(req.body?.name);
+  if (!name) { res.status(400).json({ error: "Account name must be 1 to 60 characters." }); return; }
+  const prisma = getPrisma();
+  const account = await prisma.account.findUnique({ where: { id: accountId } });
+  if (!account) { res.status(404).json({ error: "Account not found." }); return; }
+  if (account.ownerUserId !== user.id) { res.status(403).json({ error: "Account access is not allowed." }); return; }
+  const updated = await prisma.$transaction(async (transaction) => {
+    const duplicate = await transaction.account.findFirst({
+      where: { ownerUserId: user.id, id: { not: accountId }, name: { equals: name, mode: "insensitive" } },
+      select: { id: true },
+    });
+    if (duplicate) return null;
+    return transaction.account.update({ where: { id: accountId }, data: { name } });
+  });
+  if (!updated) { res.status(409).json({ error: "An account with this name already exists." }); return; }
+  res.status(200).json(accountResponse(updated));
+}));
+
+app.post("/api/accounts/:accountId/archive", asyncRoute(async (req, res) => {
+  const user = await requireUser(req, res);
+  if (!user) return;
+  const accountId = Number(req.params.accountId);
+  if (!Number.isInteger(accountId) || accountId <= 0) { res.status(400).json({ error: "A valid account ID is required." }); return; }
+  const prisma = getPrisma();
+  const result = await prisma.$transaction(async (transaction) => {
+    await transaction.$queryRaw<Array<{ id: number }>>(Prisma.sql`SELECT "id" FROM "Account" WHERE "id" = ${accountId} FOR UPDATE`);
+    const account = await transaction.account.findUnique({ where: { id: accountId } });
+    if (!account) return { error: "missing" as const };
+    if (account.ownerUserId !== user.id) return { error: "forbidden" as const };
+    if (account.archivedAt) return { error: "archived" as const };
+    if (([AccountType.CASH, AccountType.LOAN_GIVEN, AccountType.LOAN_TAKEN] as AccountType[]).includes(account.type)) {
+      const balance = (await calculateAccountBalances(transaction, user.id)).find((entry) => entry.accountId === accountId);
+      if (balance && !new Prisma.Decimal(balance.balance).isZero()) return { error: "nonzero" as const };
+    }
+    return { account: await transaction.account.update({ where: { id: accountId }, data: { archivedAt: new Date() } }) };
+  });
+  if ("error" in result) {
+    if (result.error === "missing") { res.status(404).json({ error: "Account not found." }); return; }
+    if (result.error === "forbidden") { res.status(403).json({ error: "Account access is not allowed." }); return; }
+    if (result.error === "archived") { res.status(409).json({ error: "Account is already archived." }); return; }
+    res.status(409).json({ error: "Only an account with a zero balance can be archived." }); return;
+  }
+  res.status(200).json(accountResponse(result.account));
+}));
+
+app.post("/api/accounts/:accountId/restore", asyncRoute(async (req, res) => {
+  const user = await requireUser(req, res);
+  if (!user) return;
+  const accountId = Number(req.params.accountId);
+  if (!Number.isInteger(accountId) || accountId <= 0) { res.status(400).json({ error: "A valid account ID is required." }); return; }
+  const account = await getPrisma().account.findUnique({ where: { id: accountId } });
+  if (!account) { res.status(404).json({ error: "Account not found." }); return; }
+  if (account.ownerUserId !== user.id) { res.status(403).json({ error: "Account access is not allowed." }); return; }
+  if (!account.archivedAt) { res.status(409).json({ error: "Account is not archived." }); return; }
+  const updated = await getPrisma().account.update({ where: { id: accountId }, data: { archivedAt: null } });
+  res.status(200).json(accountResponse(updated));
+}));
+
+app.delete("/api/accounts/:accountId", asyncRoute(async (req, res) => {
+  const user = await requireUser(req, res);
+  if (!user) return;
+  const accountId = Number(req.params.accountId);
+  if (!Number.isInteger(accountId) || accountId <= 0) { res.status(400).json({ error: "A valid account ID is required." }); return; }
+  const prisma = getPrisma();
+  const account = await prisma.account.findUnique({ where: { id: accountId } });
+  if (!account) { res.status(404).json({ error: "Account not found." }); return; }
+  if (account.ownerUserId !== user.id) { res.status(403).json({ error: "Account access is not allowed." }); return; }
+  const [transactions, allocations] = await Promise.all([
+    prisma.transaction.count({ where: { OR: [{ sourceAccountId: accountId }, { receivingAccountId: accountId }] } }),
+    prisma.allocationLine.count({ where: { accountId } }),
+  ]);
+  if (transactions > 0 || allocations > 0 || !new Prisma.Decimal(account.openingBalance).isZero()) {
+    res.status(409).json({ error: "This account has transactions. Archive it instead." }); return;
+  }
+  await prisma.account.delete({ where: { id: accountId } });
+  res.status(204).send();
+}));
+
 app.post("/api/accounts/:accountId/opening-balance", asyncRoute(async (req, res) => {
   const user = await requireUser(req, res);
   if (!user) return;
@@ -269,13 +394,6 @@ app.post("/api/accounts/:accountId/opening-balance", asyncRoute(async (req, res)
     res.status(400).json({ error: "A valid account ID is required." }); return;
   }
   const prisma = getPrisma();
-  const account = await prisma.account.findUnique({ where: { id: accountId } });
-  if (!account) { res.status(404).json({ error: "Account not found." }); return; }
-  if (account.ownerUserId !== user.id) { res.status(403).json({ error: "Account access is not allowed." }); return; }
-  if (account.type !== AccountType.CASH || account.subtype !== AccountSubtype.BANK) {
-    res.status(400).json({ error: "Opening balances can only be recorded for bank accounts." }); return;
-  }
-
   const rawAmount = req.body?.amount;
   if ((typeof rawAmount !== "string" && typeof rawAmount !== "number") || String(rawAmount).trim() === "") {
     res.status(400).json({ error: "A valid non-negative amount is required." }); return;
@@ -283,7 +401,7 @@ app.post("/api/accounts/:accountId/opening-balance", asyncRoute(async (req, res)
   let amount: Prisma.Decimal;
   try { amount = new Prisma.Decimal(rawAmount); }
   catch { res.status(400).json({ error: "A valid non-negative amount is required." }); return; }
-  if (!amount.isFinite() || amount.isNegative() || amount.decimalPlaces() > 30 || amount.greaterThanOrEqualTo(new Prisma.Decimal(10).pow(35))) {
+  if (!amount.isFinite() || amount.isNegative() || amount.decimalPlaces() > 2 || amount.greaterThanOrEqualTo(new Prisma.Decimal(10).pow(35))) {
     res.status(400).json({ error: "A valid non-negative amount is required." }); return;
   }
 
@@ -296,10 +414,33 @@ app.post("/api/accounts/:accountId/opening-balance", asyncRoute(async (req, res)
     res.status(400).json({ error: "A valid calendar date in YYYY-MM-DD form is required." }); return;
   }
 
-  const updated = await prisma.account.update({
-    where: { id: account.id },
-    data: { openingBalance: amount, openingBalanceDate },
-  });
+  let result;
+  try {
+    result = await prisma.$transaction(async (transaction) => {
+      await transaction.$queryRaw<Array<{ id: number }>>(Prisma.sql`SELECT "id" FROM "Account" WHERE "id" = ${accountId} FOR UPDATE`);
+      const account = await transaction.account.findUnique({ where: { id: accountId } });
+      if (!account) return { error: "missing" as const };
+      if (account.ownerUserId !== user.id) return { error: "forbidden" as const };
+      if (account.archivedAt) return { error: "archived" as const };
+      if (!( [AccountType.CASH, AccountType.LOAN_GIVEN, AccountType.LOAN_TAKEN] as AccountType[]).includes(account.type)) return { error: "wrongType" as const };
+      const openingBalance = account.type === AccountType.LOAN_TAKEN ? amount.negated() : amount;
+      const write = () => transaction.account.update({ where: { id: account.id }, data: { openingBalance, openingBalanceDate } });
+      if (account.type === AccountType.CASH) {
+        return { account: await assertCashBalancesNotNegative(transaction, user.id, [account.id], "This change would make a cash account balance negative.", write) };
+      }
+      return { account: await write() };
+    });
+  } catch (error) {
+    if (error instanceof CashOverdraftError) { res.status(400).json({ error: error.message }); return; }
+    throw error;
+  }
+  if ("error" in result) {
+    if (result.error === "missing") { res.status(404).json({ error: "Account not found." }); return; }
+    if (result.error === "forbidden") { res.status(403).json({ error: "Account access is not allowed." }); return; }
+    if (result.error === "archived") { res.status(400).json({ error: "This account is archived." }); return; }
+    res.status(400).json({ error: "Opening balances can only be recorded for cash and loan accounts." }); return;
+  }
+  const updated = result.account;
   res.status(200).json(accountResponse(updated));
 }));
 
@@ -334,6 +475,7 @@ app.post("/api/transactions/receive", asyncRoute(async (req, res) => {
   const receivingAccount = await prisma.account.findUnique({ where: { id: receivingAccountId } });
   if (!receivingAccount) { res.status(404).json({ error: "Receiving account not found." }); return; }
   if (receivingAccount.ownerUserId !== user.id) { res.status(403).json({ error: "Receiving account access is not allowed." }); return; }
+  if (receivingAccount.archivedAt) { res.status(400).json({ error: "This account is archived." }); return; }
   if (receivingAccount.type !== AccountType.CASH || (receivingAccount.subtype !== AccountSubtype.BANK && receivingAccount.subtype !== AccountSubtype.WALLET)) {
     res.status(400).json({ error: "Money can only be received into a cash or bank account." }); return;
   }
@@ -343,6 +485,7 @@ app.post("/api/transactions/receive", asyncRoute(async (req, res) => {
     const account = await prisma.account.findUnique({ where: { id: line.accountId } });
     if (!account) { res.status(404).json({ error: line.allocationType === AllocationType.INCOME ? "Income account not found." : "Transfer account not found." }); return; }
     if (account.ownerUserId !== user.id) { res.status(403).json({ error: "Allocation account access is not allowed." }); return; }
+    if (account.archivedAt) { res.status(400).json({ error: "This account is archived." }); return; }
     if (line.allocationType === AllocationType.INCOME && account.type !== AccountType.INCOME) {
       res.status(400).json({ error: "Income allocations must use an income account." }); return;
     }
@@ -424,6 +567,7 @@ app.post("/api/transactions/payment", asyncRoute(async (req, res) => {
   const sourceAccount = await prisma.account.findUnique({ where: { id: sourceAccountId } });
   if (!sourceAccount) { res.status(404).json({ error: "Source account not found." }); return; }
   if (sourceAccount.ownerUserId !== user.id) { res.status(403).json({ error: "Source account access is not allowed." }); return; }
+  if (sourceAccount.archivedAt) { res.status(400).json({ error: "This account is archived." }); return; }
   const cashSource = sourceAccount.type === AccountType.CASH
     && (sourceAccount.subtype === AccountSubtype.BANK || sourceAccount.subtype === AccountSubtype.WALLET);
   const loanSource = sourceAccount.type === AccountType.LOAN_TAKEN
@@ -438,6 +582,7 @@ app.post("/api/transactions/payment", asyncRoute(async (req, res) => {
     const account = await prisma.account.findUnique({ where: { id: line.accountId } });
     if (!account) { res.status(404).json({ error: line.allocationType === AllocationType.EXPENSE ? "Expense account not found." : "Transfer account not found." }); return; }
     if (account.ownerUserId !== user.id) { res.status(403).json({ error: "Allocation account access is not allowed." }); return; }
+    if (account.archivedAt) { res.status(400).json({ error: "This account is archived." }); return; }
     if (line.allocationType === AllocationType.EXPENSE && account.type !== AccountType.EXPENSE) {
       res.status(400).json({ error: "Payment allocations must use expense accounts." }); return;
     }
@@ -506,9 +651,11 @@ app.post("/api/transactions/transfer", asyncRoute(async (req, res) => {
   const sourceAccount = await prisma.account.findUnique({ where: { id: sourceAccountId } });
   if (!sourceAccount) { res.status(404).json({ error: "Source account not found." }); return; }
   if (sourceAccount.ownerUserId !== user.id) { res.status(403).json({ error: "Transfer account access is not allowed." }); return; }
+  if (sourceAccount.archivedAt) { res.status(400).json({ error: "This account is archived." }); return; }
   const receivingAccount = await prisma.account.findUnique({ where: { id: receivingAccountId } });
   if (!receivingAccount) { res.status(404).json({ error: "Receiving account not found." }); return; }
   if (receivingAccount.ownerUserId !== user.id) { res.status(403).json({ error: "Transfer account access is not allowed." }); return; }
+  if (receivingAccount.archivedAt) { res.status(400).json({ error: "This account is archived." }); return; }
   if (sourceAccountId === receivingAccountId) { res.status(400).json({ error: "Transfer accounts must be different." }); return; }
   const isCashAccount = (account: typeof sourceAccount) => account.type === AccountType.CASH
     && (account.subtype === AccountSubtype.BANK || account.subtype === AccountSubtype.WALLET);
@@ -559,6 +706,7 @@ app.post("/api/transactions/repayment", asyncRoute(async (req, res) => {
   const sourceAccount = await prisma.account.findUnique({ where: { id: sourceAccountId } });
   if (!sourceAccount) { res.status(404).json({ error: "Source account not found." }); return; }
   if (sourceAccount.ownerUserId !== user.id) { res.status(403).json({ error: "Source account access is not allowed." }); return; }
+  if (sourceAccount.archivedAt) { res.status(400).json({ error: "This account is archived." }); return; }
   if (sourceAccount.type !== AccountType.CASH || sourceAccount.subtype !== AccountSubtype.BANK) {
     res.status(400).json({ error: "Repayments must use a bank account." }); return;
   }
@@ -566,6 +714,7 @@ app.post("/api/transactions/repayment", asyncRoute(async (req, res) => {
   const receivingAccount = await prisma.account.findUnique({ where: { id: receivingAccountId } });
   if (!receivingAccount) { res.status(404).json({ error: "Credit-card account not found." }); return; }
   if (receivingAccount.ownerUserId !== user.id) { res.status(403).json({ error: "Credit-card account access is not allowed." }); return; }
+  if (receivingAccount.archivedAt) { res.status(400).json({ error: "This account is archived." }); return; }
   if (receivingAccount.type !== AccountType.LOAN_TAKEN || receivingAccount.subtype !== AccountSubtype.CREDIT_CARD) {
     res.status(400).json({ error: "Repayments must use a credit-card account." }); return;
   }

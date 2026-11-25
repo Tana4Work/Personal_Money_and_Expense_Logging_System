@@ -65,6 +65,7 @@ model Account {
   subtype            AccountSubtype
   openingBalance     Decimal        @default(0)
   openingBalanceDate DateTime?
+  archivedAt         DateTime?
   createdAt          DateTime       @default(now())
   owner              User           @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
   sourceTransactions Transaction[]   @relation("TransactionSource")

@@ -67,6 +67,8 @@ describe("F-08 account management", () => {
     const tokenB = await login(emails.userB);
     const body = { name: "Vacation", type: "CASH", subtype: "WALLET" };
     await request(app).post("/api/accounts").set("Authorization", `Bearer ${tokenA}`).send(body).expect(201);
+    const vacation = await prisma.account.findFirstOrThrow({ where: { ownerUserId: userAId, name: "Vacation" } });
+    await request(app).post(`/api/accounts/${vacation.id}/archive`).set("Authorization", `Bearer ${tokenA}`).expect(200);
     await request(app).post("/api/accounts").set("Authorization", `Bearer ${tokenA}`).send({ ...body, name: "vacation" }).expect(409);
     await request(app).post("/api/accounts").set("Authorization", `Bearer ${tokenB}`).send(body).expect(201);
   });
@@ -85,20 +87,43 @@ describe("F-08 account management", () => {
     const token = await login(emails.userA);
     const archived = await request(app).post(`/api/accounts/${account.id}/archive`).set("Authorization", `Bearer ${token}`).expect(200);
     expect(archived.body.archivedAt).toEqual(expect.any(String));
+    await request(app).post(`/api/accounts/${account.id}/archive`).set("Authorization", `Bearer ${token}`).expect(409);
+    const archivedDetail = await request(app).get(`/api/accounts/${account.id}`).set("Authorization", `Bearer ${token}`).expect(200);
+    expect(archivedDetail.body.archivedAt).toEqual(expect.any(String));
     const normalList = await request(app).get("/api/accounts").set("Authorization", `Bearer ${token}`).expect(200);
     expect(normalList.body.some((entry: { id: number }) => entry.id === account.id)).toBe(false);
     const completeList = await request(app).get("/api/accounts?includeArchived=true").set("Authorization", `Bearer ${token}`).expect(200);
     expect(completeList.body.some((entry: { id: number }) => entry.id === account.id)).toBe(true);
     const salary = await prisma.account.create({ data: { ownerUserId: userAId, name: "F08 salary", type: AccountType.INCOME, subtype: AccountSubtype.OTHER } });
+    const archivedIncome = await prisma.account.create({ data: { ownerUserId: userAId, name: "F08 archived income", type: AccountType.INCOME, subtype: AccountSubtype.OTHER } });
+    const bank = await prisma.account.create({ data: { ownerUserId: userAId, name: "F08 bank", type: AccountType.CASH, subtype: AccountSubtype.BANK, openingBalance: "100" } });
+    const card = await prisma.account.create({ data: { ownerUserId: userAId, name: "F08 card", type: AccountType.LOAN_TAKEN, subtype: AccountSubtype.CREDIT_CARD } });
+    const archivedCard = await prisma.account.create({ data: { ownerUserId: userAId, name: "F08 archived card", type: AccountType.LOAN_TAKEN, subtype: AccountSubtype.CREDIT_CARD } });
+    const expense = await prisma.account.create({ data: { ownerUserId: userAId, name: "F08 archived expense", type: AccountType.EXPENSE, subtype: AccountSubtype.OTHER } });
+    await request(app).post(`/api/accounts/${expense.id}/archive`).set("Authorization", `Bearer ${token}`).expect(200);
+    await request(app).post(`/api/accounts/${archivedIncome.id}/archive`).set("Authorization", `Bearer ${token}`).expect(200);
+    await request(app).post(`/api/accounts/${archivedCard.id}/archive`).set("Authorization", `Bearer ${token}`).expect(200);
     await request(app).post("/api/transactions/receive").set("Authorization", `Bearer ${token}`).send({ totalAmount: "5", date: "2026-11-25", receivingAccountId: account.id, allocations: [{ accountId: salary.id, allocationType: "INCOME", amount: "5" }] }).expect(400, { error: "This account is archived." });
+    await request(app).post("/api/transactions/receive").set("Authorization", `Bearer ${token}`).send({ totalAmount: "5", date: "2026-11-25", receivingAccountId: bank.id, allocations: [{ accountId: archivedIncome.id, allocationType: "INCOME", amount: "5" }] }).expect(400, { error: "This account is archived." });
+    await request(app).post("/api/transactions/transfer").set("Authorization", `Bearer ${token}`).send({ totalAmount: "5", date: "2026-11-25", sourceAccountId: bank.id, receivingAccountId: account.id }).expect(400, { error: "This account is archived." });
+    await request(app).post("/api/transactions/transfer").set("Authorization", `Bearer ${token}`).send({ totalAmount: "5", date: "2026-11-25", sourceAccountId: account.id, receivingAccountId: bank.id }).expect(400, { error: "This account is archived." });
+    await request(app).post("/api/transactions/payment").set("Authorization", `Bearer ${token}`).send({ totalAmount: "5", date: "2026-11-25", sourceAccountId: account.id, allocations: [{ accountId: expense.id, allocationType: "EXPENSE", amount: "5" }] }).expect(400, { error: "This account is archived." });
+    await request(app).post("/api/transactions/payment").set("Authorization", `Bearer ${token}`).send({ totalAmount: "5", date: "2026-11-25", sourceAccountId: card.id, allocations: [{ accountId: expense.id, allocationType: "EXPENSE", amount: "5" }] }).expect(400, { error: "This account is archived." });
+    await request(app).post("/api/transactions/repayment").set("Authorization", `Bearer ${token}`).send({ totalAmount: "5", date: "2026-11-25", sourceAccountId: account.id, receivingAccountId: card.id }).expect(400, { error: "This account is archived." });
+    await request(app).post("/api/transactions/repayment").set("Authorization", `Bearer ${token}`).send({ totalAmount: "5", date: "2026-11-25", sourceAccountId: bank.id, receivingAccountId: archivedCard.id }).expect(400, { error: "This account is archived." });
     const restored = await request(app).post(`/api/accounts/${account.id}/restore`).set("Authorization", `Bearer ${token}`).expect(200);
     expect(restored.body.archivedAt).toBeNull();
+    await request(app).post(`/api/accounts/${account.id}/restore`).set("Authorization", `Bearer ${token}`).expect(409);
   });
 
   it("TEST-38 rejects archiving a nonzero balance account", async () => {
     const account = await prisma.account.create({ data: { ownerUserId: userAId, name: "Nonzero bank", type: AccountType.CASH, subtype: AccountSubtype.BANK, openingBalance: "500" } });
+    const loan = await prisma.account.create({ data: { ownerUserId: userAId, name: "Nonzero loan", type: AccountType.LOAN_TAKEN, subtype: AccountSubtype.OTHER, openingBalance: "-50" } });
+    const loanGiven = await prisma.account.create({ data: { ownerUserId: userAId, name: "Nonzero loan given", type: AccountType.LOAN_GIVEN, subtype: AccountSubtype.OTHER, openingBalance: "50" } });
     const token = await login(emails.userA);
     await request(app).post(`/api/accounts/${account.id}/archive`).set("Authorization", `Bearer ${token}`).expect(409, { error: "Only an account with a zero balance can be archived." });
+    await request(app).post(`/api/accounts/${loan.id}/archive`).set("Authorization", `Bearer ${token}`).expect(409, { error: "Only an account with a zero balance can be archived." });
+    await request(app).post(`/api/accounts/${loanGiven.id}/archive`).set("Authorization", `Bearer ${token}`).expect(409, { error: "Only an account with a zero balance can be archived." });
     const unchanged = await prisma.account.findUniqueOrThrow({ where: { id: account.id } });
     expect(unchanged.openingBalance.toString()).toBe("500");
   });
@@ -106,10 +131,12 @@ describe("F-08 account management", () => {
   it("TEST-39 deletes unused accounts and retains accounts referenced by transactions", async () => {
     const unused = await prisma.account.create({ data: { ownerUserId: userAId, name: "Unused expense", type: AccountType.EXPENSE, subtype: AccountSubtype.OTHER } });
     const used = await prisma.account.create({ data: { ownerUserId: userAId, name: "Used bank", type: AccountType.CASH, subtype: AccountSubtype.BANK } });
-    await prisma.transaction.create({ data: { ownerUserId: userAId, formType: TransactionFormType.PAYMENT_OR_CHARGE, sourceAccountId: used.id, totalAmount: "1", transactionDate: new Date("2026-11-25T00:00:00Z") } });
+    const allocationOnly = await prisma.account.create({ data: { ownerUserId: userAId, name: "Allocation-only expense", type: AccountType.EXPENSE, subtype: AccountSubtype.OTHER } });
+    await prisma.transaction.create({ data: { ownerUserId: userAId, formType: TransactionFormType.PAYMENT_OR_CHARGE, sourceAccountId: used.id, totalAmount: "1", transactionDate: new Date("2026-11-25T00:00:00Z"), allocations: { create: [{ accountId: allocationOnly.id, allocationType: "EXPENSE", amount: "1" }] } } });
     const token = await login(emails.userA);
     await request(app).delete(`/api/accounts/${unused.id}`).set("Authorization", `Bearer ${token}`).expect(204);
     await request(app).delete(`/api/accounts/${used.id}`).set("Authorization", `Bearer ${token}`).expect(409, { error: "This account has transactions. Archive it instead." });
+    await request(app).delete(`/api/accounts/${allocationOnly.id}`).set("Authorization", `Bearer ${token}`).expect(409, { error: "This account has transactions. Archive it instead." });
     expect(await prisma.account.findUnique({ where: { id: used.id } })).not.toBeNull();
   });
 

@@ -41,6 +41,7 @@ describe("F-09 opening-balance management", () => {
   it("TEST-42 records a wallet opening balance and date persistently", async () => {
     const wallet = await prisma.account.create({ data: { ownerUserId: userId, name: "Wallet", type: AccountType.CASH, subtype: AccountSubtype.WALLET } });
     const token = await login(emails.user);
+    await request(app).post(`/api/accounts/${wallet.id}/opening-balance`).set("Authorization", `Bearer ${token}`).send({ amount: "1.005", date: "2026-11-01" }).expect(400);
     await request(app).post(`/api/accounts/${wallet.id}/opening-balance`).set("Authorization", `Bearer ${token}`).send({ amount: "750.00", date: "2026-11-01" }).expect(200);
     const account = await prisma.account.findUniqueOrThrow({ where: { id: wallet.id } });
     expect(account.openingBalance.toString()).toBe("750");
