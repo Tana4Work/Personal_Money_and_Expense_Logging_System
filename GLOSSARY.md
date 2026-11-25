@@ -58,9 +58,28 @@ A transaction that reduces a liability such as credit-card debt. A repayment is 
 
 ## Overdraft
 
-A Cash account balance below zero. BR-12 prohibits a Lab 7 repayment from creating an overdraft; a repayment that leaves the balance exactly zero is allowed. The rule's Lab 7 implementation scope is repayment only.
+A Cash account balance below zero. BR-12 prohibits any Cash outflow from creating an overdraft, and a balance of exactly zero is allowed. Lab 7 enforced it for repayment only. Sprint 2 enforces it for every Cash outflow, including transfers, loans given, opening-balance changes and corrections.
 
 ## Ownership
 
 The relationship between a User and that user's financial records. Backend authorization must use the authenticated identity to enforce ownership.
 
+## Transfer
+
+Moving money between two of the same user's Cash accounts, for example from the bank to the wallet. It is stored as a payment-form transaction with a `TRANSFER` allocation line, and it is neither income nor expense.
+
+## Loan given
+
+Money the user lent to someone, tracked in a `LOAN_GIVEN` account. Its balance is the amount still owed to the user. It rises when the user lends and falls when a repayment is received.
+
+## Borrowing
+
+Money the user receives as a loan, recorded on the receive form with a `BORROWING` line from a `LOAN_TAKEN` account. It increases the user's debt.
+
+## Archive
+
+Hiding an account the user no longer uses. An archived account cannot be used in new transactions but stays in history, balances and summaries, and can be restored. Under BR-13, a Cash or loan account can be archived only at a zero balance.
+
+## Correction
+
+Editing or deleting one of the user's own transactions (F-13). Every rule that applies on creation is re-checked, and balances are recalculated from the corrected data.
