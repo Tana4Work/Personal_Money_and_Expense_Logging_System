@@ -72,6 +72,7 @@
 | D-3 | BR-12 becomes one shared check inside the same DB transaction, with a `SELECT ... FOR UPDATE` lock on the source Account row. It is used by payments from bank or wallet, transfers, loans given, repayments and corrections. Card overpayment stays allowed. | Agreed 25 Nov |
 | D-4 | Release flow: `sprint2-staging` → `v2.0.0` (the Sprint 2 release), then `sprint3-staging` → `v2.1.0-rc` (the D2 candidate). | Agreed 25 Nov |
 | D-5 | Each feature branch delivers its API and its API/DB tests. Issue 06 delivers the new UI for all Sprint 2 features plus client tests. The client is one file, so one UI branch avoids merge conflicts. | Agreed 25 Nov |
+| D-12 | UI versions. **Until Issue 06 merges, follow the old UI, v1.0 Zen Green ([`UI-specs-v1.0.md`](../UI-specs-v1.0.md)).** Any UI change in Issues 01 to 05 uses v1.0 styling and components. Issue 06 then moves the whole client to v2.0 PMELS Charcoal ([`UI-specs.md`](../UI-specs.md)) in one reviewed change. | Agreed 25 Nov |
 | D-6 | Corrections (F-13) edit in place and allow delete, with `updatedAt` recorded. Balances are computed from transactions, so no stored balance needs repair. A change is rejected if any Cash account would go below 0.00. | Adopted in contracts v1.0 (#73); the reviewer confirms it in the contracts PR |
 | D-7 | An account with transactions can only be archived (hidden from forms, still counted in history and balances). Hard delete is allowed only when the account has no transactions. | Adopted in contracts v1.0 (#73) |
 | D-8 | A Cash opening balance must be ≥ 0.00. An edit that would push the current balance below 0.00 is rejected under BR-12. For card and loan accounts, the opening balance stays the starting debt. | Adopted in contracts v1.0 (#73) |
@@ -226,7 +227,7 @@ Planned, but not opened yet:
   - Record (payment or charge with split allocation, receive money, transfer, repayment)
   - Loans (given and taken, with outstanding amounts)
   - History (search, filters, edit and delete)
-- Apply the **PMELS Charcoal** design system in `UI-specs.md` v2.0 (tokens, components, screens, accessibility), replacing the Sprint 1 Zen Green theme. Keep the Administrator view. Every screen shows validation, loading, empty and server-error states. Server rejections are shown on screen as AC-40 does for repayment, with no client-side balance pre-check.
+- Build the Sprint 2 screens, then switch the whole client from v1.0 Zen Green (`UI-specs-v1.0.md`, used until this point) to the **PMELS Charcoal** design system in `UI-specs.md` v2.0 (tokens, components, screens, accessibility). Keep the Administrator view. Every screen shows validation, loading, empty and server-error states. Server rejections are shown on screen as AC-40 does for repayment, with no client-side balance pre-check.
 - Client tests in `client/tests/` for each new form's validation and server-error display. Run the Sprint 1 UI tests again unchanged as regression checks.
 - When it merges, update the "Implementation status" table in `UI-specs.md` (the spec itself was written in Issue 00).
 - **Done when:** CI is green, the PR has a review comment from Thanaphon, the full Sprint 1 journey and every Sprint 2 journey work through the UI on local Docker, and the branch is merged.
@@ -299,5 +300,6 @@ No real passwords, tokens or secrets go into the PDF or Git. Test accounts come 
 | Date | Change |
 |---|---|
 | 2026-11-25 | First version: scope, decisions D-1 to D-9, Issues 00–07, planned 08–10, schedule and evidence map. |
+| 2026-11-25 | The v1.0 UI spec is kept as `UI-specs-v1.0.md` and stays in force until Issue 06 (D-12). `UI-specs.md` v2.0 takes effect when Issue 06 merges. |
 | 2026-11-25 | Owners changed: F-08 to F-11 → Thanaphon; F-12 to F-14, the BR-12 helper, the new UI and F-15 to F-18 → Tana. Reviewers swapped to match. `UI-specs.md` rewritten as the PMELS Charcoal design system (v2.0). |
 | 2026-11-25 | Sprint 2 contracts v1.0 written (Issue 00). D-6 to D-9 adopted. D-10 (balance calculation) and D-11 (2-decimal amounts, note) added. Completion plan to 13 Dec added. |

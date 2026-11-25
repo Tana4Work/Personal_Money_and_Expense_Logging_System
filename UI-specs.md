@@ -86,7 +86,9 @@ components:
 
 # UI Specification: PMELS Charcoal (v2.0)
 
-**Status:** this is the **target design for Issue 06** (`SP2-06-ui/sprint2-screens`). The client currently in `client/src` still uses the Sprint 1 "Zen Green" theme, which v1 of this file described (see the version history). Issue 06 implements this specification and updates the "Implementation status" section when it merges.
+**Status:** this is the **target design for Issue 06** (`SP2-06-ui/sprint2-screens`). It takes effect only when Issue 06 merges.
+
+**Until then, follow v1.0.** The implemented Sprint 1 "Zen Green" UI is specified in [`UI-specs-v1.0.md`](UI-specs-v1.0.md). All work before Issue 06, including any UI touched by Issues 01 to 05, follows v1.0. Do not apply PMELS Charcoal tokens or components early. Issue 06 then moves the whole client to v2.0 in one change and updates the "Implementation status" section.
 
 **Source:** adapted from `design.md` "Estilo de Inteligência Generativa" (designmd.app). Every change from that source is listed under **Deviations from the source design**.
 
@@ -336,7 +338,7 @@ Unchanged from Sprint 1. The token and current user are held in React state only
 
 | Area | Status (25 Nov 2026) |
 |---|---|
-| Sprint 1 screens (Sign-in, User view, Administrator, Sign-out) | Implemented in the v1 Zen Green theme |
+| Sprint 1 screens (Sign-in, User view, Administrator, Sign-out) | Implemented in the v1.0 Zen Green theme ([`UI-specs-v1.0.md`](UI-specs-v1.0.md)). This applies until Issue 06 merges. |
 | PMELS Charcoal theme and the Sprint 2 screens | Planned (Issue 06) |
 
 ## Source files
@@ -352,5 +354,5 @@ Unchanged from Sprint 1. The token and current user are held in React state only
 
 | Version | Date | Change | Issue |
 |---|---|---|---|
-| 1.0 | Sprint 1 | Described the implemented "Zen Green" theme and the F-01 to F-03 screens. | Sprint 1 |
+| 1.0 | Sprint 1 | Described the implemented "Zen Green" theme and the F-01 to F-03 screens. Preserved unchanged in [`UI-specs-v1.0.md`](UI-specs-v1.0.md). | Sprint 1 |
 | 2.0 | 2026-11-25 | Rewritten in design.md format as the target "PMELS Charcoal" design system for the Sprint 2 UI (Issue 06), adapted from "Estilo de Inteligência Generativa" with accessibility fixes and app-specific screens. | #73 |
