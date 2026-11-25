@@ -72,10 +72,12 @@
 | D-3 | BR-12 becomes one shared check inside the same DB transaction, with a `SELECT ... FOR UPDATE` lock on the source Account row. It is used by payments from bank or wallet, transfers, loans given, repayments and corrections. Card overpayment stays allowed. | Agreed 25 Nov |
 | D-4 | Release flow: `sprint2-staging` → `v2.0.0` (the Sprint 2 release), then `sprint3-staging` → `v2.1.0-rc` (the D2 candidate). | Agreed 25 Nov |
 | D-5 | Each feature branch delivers its API and its API/DB tests. Issue 06 delivers the new UI for all Sprint 2 features plus client tests. The client is one file, so one UI branch avoids merge conflicts. | Agreed 25 Nov |
-| D-6 | Corrections (F-13) edit in place and allow delete, with `updatedAt` recorded. Balances are computed from transactions, so no stored balance needs repair. A change is rejected if any Cash account would go below 0.00. | **Proposed, to be confirmed before the contracts merge** |
-| D-7 | An account with transactions can only be archived (hidden from forms, still counted in history and balances). Hard delete is allowed only when the account has no transactions. | **Proposed** |
-| D-8 | A Cash opening balance must be ≥ 0.00. An edit that would push the current balance below 0.00 is rejected under BR-12. For card and loan accounts, the opening balance stays the starting debt. | **Proposed** |
-| D-9 | Search filters on date range, account, transaction type, amount range and note text. It runs on the server for the owner only, newest first, with pagination. Another user's account ID returns an empty result rather than revealing that the account exists. | **Proposed** |
+| D-6 | Corrections (F-13) edit in place and allow delete, with `updatedAt` recorded. Balances are computed from transactions, so no stored balance needs repair. A change is rejected if any Cash account would go below 0.00. | Adopted in contracts v1.0 (#73); the reviewer confirms it in the contracts PR |
+| D-7 | An account with transactions can only be archived (hidden from forms, still counted in history and balances). Hard delete is allowed only when the account has no transactions. | Adopted in contracts v1.0 (#73) |
+| D-8 | A Cash opening balance must be ≥ 0.00. An edit that would push the current balance below 0.00 is rejected under BR-12. For card and loan accounts, the opening balance stays the starting debt. | Adopted in contracts v1.0 (#73) |
+| D-9 | Search filters on date range, account, transaction type, amount range and note text. It runs on the server for the owner only, newest first, with pagination. Another user's account ID returns an empty result rather than revealing that the account exists. | Adopted in contracts v1.0 (#73) |
+| D-10 | Balance calculation counts allocation lines on Cash and loan accounts (transfers, loans given, repayments, borrowing). On payment-form transactions `receivingAccountId` is ignored. Without this, a transfer or loan would never change the target account's balance. Sprint 1 data keeps identical balances. See [Sprint 2 contracts](sprints/sprint-2/README.md) §3. | Adopted in contracts v1.0 (#73) |
+| D-11 | Amounts allow at most 2 decimal places, which fixes the Lab 7 minor defect. Transactions get an optional `note` of up to 200 characters, needed for F-14 search. | Adopted in contracts v1.0 (#73) |
 
 ## 5. Branch and release flow
 
@@ -156,7 +158,7 @@ Planned, but not opened yet:
    - Concurrent transfers never overdraw the source.
    - The existing TEST-28 to TEST-32 still pass, as regression guards.
 2. GREEN:
-   - Extract `assertCashOutflowAllowed()` (name to be decided in the contract), called inside `prisma.$transaction` after the auth, ownership and type checks.
+   - Extract `assertCashBalancesNotNegative()` (see F-12 contract), called inside `prisma.$transaction` after the auth, ownership and type checks.
    - Route repayment through it.
    - Add the `TRANSFER` allocation on payment and receipt of a transfer.
 3. Run the full `npm test` and record pass, fail and skip counts.
@@ -200,14 +202,14 @@ Planned, but not opened yet:
 - Tests:
   - An edit that would overdraw → 400 and the original is unchanged.
   - A delete of an inflow that would leave Cash negative → 400.
-  - Another user's transaction → 403 (or 404, per the contract).
+  - Another user's transaction → 403.
   - The edited values persist.
   - Summaries are recalculated.
 - **Done when:** CI is green, the PR has a review comment from Tana, and the branch is merged.
 
 ### Issue 05: F-14 Transaction search and filtering
 
-- `GET /api/transactions` with query filters per D-9, validated (invalid date range → 400), paginated.
+- New `GET /api/transactions/search` with query filters per D-9, validated (invalid date range → 400), paginated. The Sprint 1 `GET /api/transactions` stays unchanged.
 - Tests:
   - Each filter.
   - Combined filters.
@@ -253,6 +255,19 @@ Planned, but not opened yet:
 
 If something slips, the order to protect is: Sprint 2 features (B, 25 pts) → deployed candidate (E, 15) → F-15 (C, 15) → report polish. F-16 to F-18 are contracts only for D2.
 
+### Completion plan to 13 December (Part C and Part E)
+
+Exams run from 1 to 11 December. Before the D2 PDF goes in, check these dates against both students' exam timetables.
+
+| Date | Work | Owner | Exit check |
+|---|---|---|---|
+| Mon 30 Nov | F-16 Favorites and F-17 Duplicate as draft (contracts already merged in Issue 08, built test-first) | Thanaphon / Tana | Both merged into `sprint3-staging` |
+| 1–3 Dec | F-18 Income and expense reports. Hardening: shared validation and any D2 defects | Thanaphon / Both | Merged, CI green |
+| 4–6 Dec | Release `v3.0.0-rc` and deploy. Ask CPMS to re-test the Lab 6 UAT cases and the affected journeys | Both + CPMS | UAT re-test records with tester and version |
+| 7–10 Dec | Fix accepted UAT findings, then run the full regression suite on the final commit. Tag `v3.0.0` | Both | All tests pass on the final commit, deployed |
+| 11–12 Dec | Final traceability (every requirement marked PASS, FAIL, SKIPPED or INCOMPLETE), NFR checks, Definition of Done review, video (max 4 min, both students), final PDF | Both | PDF and YouTube link ready |
+| Sun 13 Dec | Submit by 23:59 | Both | Submitted |
+
 ## 8. Evidence to capture for the PDF
 
 | Part | Evidence |
@@ -283,3 +298,4 @@ No real passwords, tokens or secrets go into the PDF or Git. Test accounts come 
 | Date | Change |
 |---|---|
 | 2026-11-25 | First version: scope, decisions D-1 to D-9, Issues 00–07, planned 08–10, schedule and evidence map. |
+| 2026-11-25 | Sprint 2 contracts v1.0 written (Issue 00). D-6 to D-9 adopted. D-10 (balance calculation) and D-11 (2-decimal amounts, note) added. Completion plan to 13 Dec added. |
