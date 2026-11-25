@@ -87,13 +87,15 @@ describe("F-03 opening balance", () => {
     }
   });
 
-  it("rejects non-bank account types and leaves category balances unchanged", async () => {
+  it("accepts wallet opening balances and rejects category account types", async () => {
     const token = await login(emails.user);
     await request(app).post(`/api/accounts/${walletAccountId}/opening-balance`).set("Authorization", `Bearer ${token}`)
-      .send({ amount: "10", date: "2026-11-03" }).expect(400);
+      .send({ amount: "10", date: "2026-11-03" }).expect(200);
     await request(app).post(`/api/accounts/${salaryAccountId}/opening-balance`).set("Authorization", `Bearer ${token}`)
       .send({ amount: "10", date: "2026-11-03" }).expect(400);
-    const categoryAccounts = await prisma.account.findMany({ where: { id: { in: [walletAccountId, salaryAccountId, diningAccountId] } } });
+    const wallet = await prisma.account.findUniqueOrThrow({ where: { id: walletAccountId } });
+    expect(wallet.openingBalance.toString()).toBe("10");
+    const categoryAccounts = await prisma.account.findMany({ where: { id: { in: [salaryAccountId, diningAccountId] } } });
     expect(categoryAccounts.every((account) => account.openingBalance.isZero() && account.openingBalanceDate === null)).toBe(true);
   });
 
