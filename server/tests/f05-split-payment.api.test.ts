@@ -75,7 +75,7 @@ describe("F-05 split payment", () => {
     const balances = await request(app).get("/api/summaries/balances").set("Authorization", `Bearer ${token}`).expect(200);
     expect(balances.body.accounts.find((entry: { accountId: number }) => entry.accountId === cardAccountId)).toEqual({ accountId: cardAccountId, balance: "-2000" });
     const summary = await request(app).get("/api/summaries").set("Authorization", `Bearer ${token}`).expect(200);
-    expect(summary.body).toEqual({ income: "0", expenses: "2000" });
+    expect(summary.body).toMatchObject({ income: "0", expenses: "2000", loansGivenOutstanding: "0", loansTakenOutstanding: "2000" });
     const history = await request(app).get("/api/transactions").set("Authorization", `Bearer ${token}`).expect(200);
     expect(history.body.some((entry: { id: number }) => entry.id === created.body.id)).toBe(true);
   });

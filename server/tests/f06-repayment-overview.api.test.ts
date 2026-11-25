@@ -96,7 +96,7 @@ describe("F-06 credit-card repayment and overview", () => {
     expect(balances.body.accounts.find((entry: { accountId: number }) => entry.accountId === bankAccountId)).toEqual({ accountId: bankAccountId, balance: "38000" });
     expect(balances.body.accounts.find((entry: { accountId: number }) => entry.accountId === cardAccountId)).toEqual({ accountId: cardAccountId, balance: "0" });
     const summary = await request(app).get("/api/summaries").set("Authorization", `Bearer ${token}`).expect(200);
-    expect(summary.body).toEqual({ income: "30000", expenses: "2000" });
+    expect(summary.body).toMatchObject({ income: "30000", expenses: "2000", loansGivenOutstanding: "0", loansTakenOutstanding: "0" });
     const history = await request(app).get("/api/transactions").set("Authorization", `Bearer ${token}`).expect(200);
     expect(history.body).toHaveLength(3);
     expect(history.body.some((entry: { id: number }) => entry.id === repayment.body.id)).toBe(true);
