@@ -74,7 +74,7 @@ balance(A) = openingBalance(A)
 - On a `PAYMENT_OR_CHARGE` transaction, `receivingAccountId` is informational only and is no longer used in the calculation. Sprint 1 repayments therefore keep the same balances with no data migration: the card still gains the amount, now through its `REPAYMENT` line. TEST-10, TEST-28 to TEST-32 and AC-31/AC-32 guard this.
 - `INCOME` and `EXPENSE` accounts keep the Sprint 1 behavior (a balance of 0, with totals in summaries). F-15 in Sprint 3 handles category totals.
 - `GET /api/summaries/balances` returns this balance for every account, including archived ones.
-- `GET /api/summaries` adds `loansGivenOutstanding` (Σ positive `LOAN_GIVEN` balances) and `loansTakenOutstanding` (Σ of −balance over `LOAN_TAKEN` accounts with a negative balance). The existing `income` and `expenses` fields are unchanged.
+- `GET /api/summaries` adds `loansGivenOutstanding` (Σ positive `LOAN_GIVEN` balances) and `loansTakenOutstanding` (Σ of −balance over `LOAN_TAKEN` accounts with a negative balance). The existing `income` and `expenses` values are unchanged; the F-05 and F-06 regression tests check those values and the added loan totals.
 
 ## 4. BR-12 extended to every Cash outflow (decision D-3)
 
@@ -130,5 +130,6 @@ All three are additive, so existing rows stay valid. The migrations run through 
 
 | Version | Date | Change | Issue |
 |---|---|---|---|
+| 1.0.2 | 2026-11-25 | Clarified that loan totals are additive summary fields and the F-05/F-06 regression tests check existing income/expense values plus the new fields. | #01 |
 | 1.0.1 | 2026-11-25 | Owners changed: F-08 to F-11 → Thanaphon; F-12 to F-14 → Tana (reviewers swapped). No contract content changed. | #73 |
 | 1.0 | 2026-11-25 | First Sprint 2 contract set: allocation matrix, balance rule D-10, BR-12 extension, shared validation and data changes. | #73 |

@@ -76,7 +76,7 @@ Migration `sprint2_transaction_note_updated_at`: `Transaction.note String? @db.V
 | AC-70 | A transfer to the same account, to a non-Cash account, or to another user's account returns 400, 400 and 403 respectively, with no write. |
 | AC-71 | A payment from a bank with `EXPENSE` lines lowers the bank balance (a new Sprint 2 source) and is rejected under BR-12 when it would overdraw. |
 | AC-72 | A receive-form `TRANSFER` line taken from a Cash account that lacks the funds returns 400 with no write. |
-| AC-73 | Sprint 1 and Lab 7 behavior is unchanged after the refactor. TEST-10, the f06 journey and TEST-28 to TEST-32 pass with unchanged assertions. An amount with 3 decimal places is now rejected with 400. |
+| AC-73 | Sprint 1 and Lab 7 balance and repayment behavior is unchanged after the refactor. The F-05 and F-06 summary tests retain their income and expense value checks and also verify the additive `loansGivenOutstanding` and `loansTakenOutstanding` fields. TEST-10, the F-06 journey and TEST-28 to TEST-32 pass. An amount with 3 decimal places is rejected with 400. |
 | AC-74 | An Administrator gets 403 and no session gets 401 on `/api/transactions/transfer`. |
 | AC-74-UI | The transfer form submits a valid transfer and shows the server's BR-12 message. Verified in Issue 06. |
 
@@ -92,7 +92,7 @@ File `server/tests/f12-transfers.api.test.ts`. The regression cases stay in thei
 | TEST-63 | API/DB | AC-70 | From the bank to the bank. From the bank to Dining. From the bank to B's wallet. | 400 `"Transfer accounts must be different."`, 400 `"Transfers must use cash accounts."`, and 403. No writes. |
 | TEST-64 | API/DB | AC-71 | Pay 200.00 from the bank to Dining, then pay 300.01 from the bank. | 201 with the bank at 300.00 and expenses up by 200. Then 400 with the BR-12 message and no write. |
 | TEST-65 | API/DB | AC-72 | Wallet 0.00. Receive 50.00 into the bank as a `TRANSFER` from the wallet. | 400 with no write. |
-| TEST-66 | API/DB | AC-73 | Run the f04, f05 and f06 suites unchanged. Post a receipt of `"10.005"`. | All existing tests pass. The 3-decimal amount → 400 `"A valid positive amount is required."` |
+| TEST-66 | API/DB | AC-73 | Run the F-04, F-05 and F-06 regression suites. Post a receipt of `"10.005"`; transfer with a 200-character note, then a 201-character note. | All regression tests pass. The 3-decimal amount → 400 `"A valid positive amount is required."`; 200-character note is stored, 201-character note → 400 with no write. |
 | TEST-67 | Unit | AC-73 | `calculateAccountBalances()` with synthetic rows: one Sprint 1 repayment (both `receivingAccountId` and a `REPAYMENT` line set), one transfer and one loan given. | The card is credited once, not twice. The transfer target and the loan-given account are credited. The source accounts are debited. |
 | TEST-68 | API/DB | AC-74 | An Administrator token, then no token, on the transfer endpoint. | 403, then 401. |
 
@@ -110,4 +110,5 @@ TEST-66 records the Lab 7 defect "amount parser accepts 30 decimal places" as fi
 
 | Version | Date | Change | Issue |
 |---|---|---|---|
+| 1.0.1 | 2026-11-25 | Clarified AC-73 for additive loan totals in `/api/summaries`; F-05 and F-06 summary regressions retain their income/expense checks and verify the new fields. | #01 |
 | 1.0 | 2026-11-25 | First contract. Covers transfers, the D-10 balance rule, BR-12 extended to all Cash outflows, Cash-source payments, 2-decimal amounts and the note. | #73 |

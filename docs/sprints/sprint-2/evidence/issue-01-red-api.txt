@@ -1,0 +1,200 @@
+Command: npm.cmd test -- tests/f12-transfers.api.test.ts
+
+> money-tracker-server@1.0.0 test
+> vitest run tests/f12-transfers.api.test.ts
+
+
+ RUN  v2.1.9 D:/KMUTT/Year3/CPE334-Software_Engineering/Project/server
+
+ o' tests/f12-transfers.api.test.ts (8 tests | 8 failed) 2945ms
+   � F-12 transfers and shared Cash-outflow rules > TEST-60 transfers money and persists the note without changing summaries 192ms
+     �! expected 201 "Created", got 404 "Not Found"
+   � F-12 transfers and shared Cash-outflow rules > TEST-61 rejects a transfer above balance and accepts one that leaves exactly zero 88ms
+     �! expected 400 "Bad Request", got 404 "Not Found"
+   � F-12 transfers and shared Cash-outflow rules > TEST-62 serializes concurrent transfers so the source never becomes negative 87ms
+     �! expected [ 404, 404 ] to deeply equal [ 201, 400 ]
+   � F-12 transfers and shared Cash-outflow rules > TEST-63 rejects same-account, non-Cash, and cross-owner transfers without writes 85ms
+     �! expected 400 "Bad Request", got 404 "Not Found"
+   � F-12 transfers and shared Cash-outflow rules > TEST-64 applies BR-12 to Cash-source payments 79ms
+     �! expected 201 "Created", got 400 "Bad Request"
+   � F-12 transfers and shared Cash-outflow rules > TEST-65 rejects a receive-form transfer from a Cash account with insufficient balance 80ms
+     �! expected { Object (error) } to deeply equal { Object (error) }
+   � F-12 transfers and shared Cash-outflow rules > TEST-66 rejects amounts with more than two decimal places 111ms
+     �! expected 400 "Bad Request", got 201 "Created"
+   � F-12 transfers and shared Cash-outflow rules > TEST-68 rejects unauthenticated and Administrator access to transfers 16ms
+     �! expected 401 "Unauthorized", got 404 "Not Found"
+
+npm.cmd : �#�#�#�#�#�#�# Failed Tests 8 �#�#�#�#�#�#�#
+At line:2 char:237
++ ... t'; $null = & npm.cmd test -- tests/f12-transfers.api.test.ts 2>&1 |  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (�#�#�#�#�#�#�# Failed Tests 8 �#�#�#�#�#�#�#:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+
+ FAIL  tests/f12-transfers.api.test.ts > F-12 transfers and shared Cash-outflow rules > TEST-60 transfers money and
+persists the note without changing summaries
+Error: expected 201 "Created", got 404 "Not Found"
+ o' tests/f12-transfers.api.test.ts:73:8
+     71|     const response = await request(app).post("/api/transactions/transf&
+     72|       totalAmount: "250.00", date: "2026-11-26", sourceAccountId: bank&
+     73|     }).expect(201);
+       |        ^
+     74|
+     75|     expect(response.body).toMatchObject({
+ o' Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ o' node_modules/supertest/lib/test.js:460:13
+ o' Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ o' Test.assert node_modules/supertest/lib/test.js:302:23
+ o' localAssert node_modules/supertest/lib/test.js:220:38
+ o' Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#[1/8]�#
+
+ FAIL  tests/f12-transfers.api.test.ts > F-12 transfers and shared Cash-outflow rules > TEST-61 rejects a transfer
+above balance and accepts one that leaves exactly zero
+Error: expected 400 "Bad Request", got 404 "Not Found"
+ o' tests/f12-transfers.api.test.ts:94:8
+     92|     const rejected = await request(app).post("/api/transactions/transf&
+     93|       totalAmount: "500.01", date: "2026-11-26", sourceAccountId: bank&
+     94|     }).expect(400);
+       |        ^
+     95|     expect(rejected.body).toEqual({ error: "Insufficient balance in th&
+     96|     expect(JSON.stringify(rejected.body)).not.toContain("500");
+ o' Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ o' node_modules/supertest/lib/test.js:460:13
+ o' Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ o' Test.assert node_modules/supertest/lib/test.js:302:23
+ o' localAssert node_modules/supertest/lib/test.js:220:38
+ o' Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#[2/8]�#
+
+ FAIL  tests/f12-transfers.api.test.ts > F-12 transfers and shared Cash-outflow rules > TEST-62 serializes concurrent
+transfers so the source never becomes negative
+AssertionError: expected [ 404, 404 ] to deeply equal [ 201, 400 ]
+
+- Expected
++ Received
+
+  Array [
+-   201,
+-   400,
++   404,
++   404,
+  ]
+
+ o' tests/f12-transfers.api.test.ts:111:65
+    109|         totalAmount, date: "2026-11-26", sourceAccountId: bankAccountI&
+    110|       })));
+    111|     expect(responses.map((response) => response.status).sort()).toEqua&
+       |                                                                 ^
+    112|     expect(await prisma.transaction.count({ where: { ownerUserId: user&
+    113|     expect(await getBalance(token, bankAccountId)).toBe("200");
+
+�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#[3/8]�#
+
+ FAIL  tests/f12-transfers.api.test.ts > F-12 transfers and shared Cash-outflow rules > TEST-63 rejects same-account,
+non-Cash, and cross-owner transfers without writes
+Error: expected 400 "Bad Request", got 404 "Not Found"
+ o' tests/f12-transfers.api.test.ts:121:8
+    119|     const sameAccount = await request(app).post("/api/transactions/tra&
+    120|       totalAmount: "10", date: "2026-11-26", sourceAccountId: bankAcco&
+    121|     }).expect(400);
+       |        ^
+    122|     expect(sameAccount.body).toEqual({ error: "Transfer accounts must &
+    123|     const nonCash = await request(app).post("/api/transactions/transfe&
+ o' Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ o' node_modules/supertest/lib/test.js:460:13
+ o' Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ o' Test.assert node_modules/supertest/lib/test.js:302:23
+ o' localAssert node_modules/supertest/lib/test.js:220:38
+ o' Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#[4/8]�#
+
+ FAIL  tests/f12-transfers.api.test.ts > F-12 transfers and shared Cash-outflow rules > TEST-64 applies BR-12 to
+Cash-source payments
+Error: expected 201 "Created", got 400 "Bad Request"
+ o' tests/f12-transfers.api.test.ts:138:8
+    136|       totalAmount: "200", date: "2026-11-26", sourceAccountId: bankAcc&
+    137|       allocations: [{ accountId: diningAccountId, allocationType: "EXP&
+    138|     }).expect(201);
+       |        ^
+    139|     expect(await getBalance(token, bankAccountId)).toBe("300");
+    140|     const before = await getCounts();
+ o' Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ o' node_modules/supertest/lib/test.js:460:13
+ o' Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ o' Test.assert node_modules/supertest/lib/test.js:302:23
+ o' localAssert node_modules/supertest/lib/test.js:220:38
+ o' Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#[5/8]�#
+
+ FAIL  tests/f12-transfers.api.test.ts > F-12 transfers and shared Cash-outflow rules > TEST-65 rejects a receive-form
+transfer from a Cash account with insufficient balance
+AssertionError: expected { Object (error) } to deeply equal { Object (error) }
+
+- Expected
++ Received
+
+  Object {
+-   "error": "Insufficient balance in the source cash account.",
++   "error": "Each allocation must be a positive income allocation.",
+  }
+
+ o' tests/f12-transfers.api.test.ts:156:27
+    154|       allocations: [{ accountId: walletAccountId, allocationType: "TRA&
+    155|     }).expect(400);
+    156|     expect(response.body).toEqual({ error: "Insufficient balance in th&
+       |                           ^
+    157|     expect(await getCounts()).toEqual(before);
+    158|   });
+
+�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#[6/8]�#
+
+ FAIL  tests/f12-transfers.api.test.ts > F-12 transfers and shared Cash-outflow rules > TEST-66 rejects amounts with
+more than two decimal places
+Error: expected 400 "Bad Request", got 201 "Created"
+ o' tests/f12-transfers.api.test.ts:166:8
+    164|       totalAmount: "10.005", date: "2026-11-26", receivingAccountId: b&
+    165|       allocations: [{ accountId: salary.id, allocationType: "INCOME", &
+    166|     }).expect(400);
+       |        ^
+    167|     expect(response.body).toEqual({ error: "A valid positive amount is&
+    168|   });
+ o' Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ o' node_modules/supertest/lib/test.js:460:13
+ o' Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ Test Files  1 failed (1)
+      Tests  8 failed (8)
+   Start at  19:11:11
+   Duration  4.13s (transform 96ms, setup 0ms, collect 274ms, tests 2.95s, environment 0ms, prepare 78ms)
+
+ o' Test.assert node_modules/supertest/lib/test.js:302:23
+ o' localAssert node_modules/supertest/lib/test.js:220:38
+ o' Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#[7/8]�#
+
+ FAIL  tests/f12-transfers.api.test.ts > F-12 transfers and shared Cash-outflow rules > TEST-68 rejects
+unauthenticated and Administrator access to transfers
+Error: expected 401 "Unauthorized", got 404 "Not Found"
+ o' tests/f12-transfers.api.test.ts:172:70
+    170|   it("TEST-68 rejects unauthenticated and Administrator access to tran&
+    171|     const body = { totalAmount: "10", date: "2026-11-26", sourceAccoun&
+    172|     await request(app).post("/api/transactions/transfer").send(body).e&
+       |                                                                      ^
+    173|     const adminToken = await login(emails.admin);
+    174|     await request(app).post("/api/transactions/transfer").set("Authori&
+ o' Test._assertStatus node_modules/supertest/lib/test.js:404:14
+ o' node_modules/supertest/lib/test.js:460:13
+ o' Test._assertFunction node_modules/supertest/lib/test.js:437:13
+ o' Test.assert node_modules/supertest/lib/test.js:302:23
+ o' localAssert node_modules/supertest/lib/test.js:220:38
+ o' Server.<anonymous> node_modules/supertest/lib/test.js:227:13
+
+�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#[8/8]�#
+
+EXIT_CODE=1

@@ -1,0 +1,52 @@
+RED evidence: F-06 summary test expects additive loan summary fields before the implementation adds them.
+Command: npm.cmd test -- tests/f06-repayment-overview.api.test.ts
+
+> money-tracker-server@1.0.0 test
+> vitest run tests/f06-repayment-overview.api.test.ts
+
+
+ RUN  v2.1.9 D:/KMUTT/Year3/CPE334-Software_Engineering/Project/server
+
+ o' tests/f06-repayment-overview.api.test.ts (7 tests | 1 failed) 5242ms
+   � F-06 credit-card repayment and overview > completes and retrieves the full Sprint 1 journey with correct final values 250ms
+     �! expected { income: '30000', expenses: '2000' } to match object { income: '30000', & (3) }
+   ' F-06 credit-card repayment and overview > TEST-30 serializes competing repayments so the bank balance never becomes negative 2199ms
+
+npm.cmd : �#�#�#�#�#�#�# Failed Tests 1 �#�#�#�#�#�#�#
+At line:2 char:601
++ ... th; $null = & npm.cmd test -- tests/f06-repayment-overview.api.test.t ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (�#�#�#�#�#�#�# Failed Tests 1 �#�#�#�#�#�#�#:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+
+ FAIL  tests/f06-repayment-overview.api.test.ts > F-06 credit-card repayment and overview > completes and retrieves
+the full Sprint 1 journey with correct final values
+AssertionError: expected { income: '30000', expenses: '2000' } to match object { income: '30000', & (3) }
+
+- Expected
++ Received
+
+  Object {
+    "expenses": "2000",
+    "income": "30000",
+-   "loansGivenOutstanding": "0",
+-   "loansTakenOutstanding": "0",
+  }
+
+ o' tests/f06-repayment-overview.api.test.ts:99:26
+     97|     expect(balances.body.accounts.find((entry: { accountId: number }) &
+     98|     const summary = await request(app).get("/api/summaries").set("Auth&
+     99|     expect(summary.body).toMatchObject({ income: "30000", expenses: "2&
+       |                          ^
+    100|     const history = await request(app).get("/api/transactions").set("A&
+    101|     expect(history.body).toHaveLength(3);
+
+�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#�#[1/1]�#
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  19:14:08
+   Duration  6.46s (transform 93ms, setup 0ms, collect 270ms, tests 5.24s, environment 0ms, prepare 78ms)
+
+EXIT_CODE=1

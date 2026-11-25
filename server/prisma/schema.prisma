@@ -83,6 +83,8 @@ model Transaction {
   totalAmount        Decimal             @db.Decimal(65, 30)
   transactionDate    DateTime
   createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @default(now()) @updatedAt
+  note               String?             @db.VarChar(200)
   owner              User                @relation("TransactionOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
   sourceAccount      Account?            @relation("TransactionSource", fields: [sourceAccountId], references: [id], onDelete: Restrict)
   receivingAccount   Account?            @relation("TransactionReceiving", fields: [receivingAccountId], references: [id], onDelete: Restrict)
